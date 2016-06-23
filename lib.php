@@ -1272,6 +1272,12 @@ function workshep_update_grades(stdclass $workshep, $userid=0) {
         $assessmentgrades[$record->userid] = $grade;
     }
 
+    $teameval_plugin = core_plugin_manager::instance()->get_plugin_info('local_teameval');
+    if ($teameval_plugin) {
+        $evaluationcontext = \local_teameval\evaluation_context::context_for_module($workshep->cm);
+        $submissiongrades = $evaluationcontext->update_grades($submissiongrades);
+    }
+
     workshep_grade_item_update($workshep, $submissiongrades, $assessmentgrades);
 }
 
@@ -1932,4 +1938,24 @@ function workshep_reset_userdata(stdClass $data) {
     }
 
     return $status;
+}
+
+function workshep_get_evaluation_context($cm) {
+    global $DB, $CFG;
+
+    require_once(dirname(__FILE__).'/locallib.php');
+
+    $course         = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+    $worksheprecord = $DB->get_record('workshep', array('id' => $cm->instance), '*', MUST_EXIST);
+
+    if ($cm instanceof stdClass) {
+        $cmrecord = $cm;
+        $cm = get_fast_modinfo($cm->course)->get_cm($cm->id);
+    } else {
+        $cmrecord = $cm->get_course_module_record();
+    }
+
+    $workshep = new workshep($worksheprecord, $cmrecord, $course);
+    return new \mod_workshep\evaluation_context($workshep, $cm);
+
 }

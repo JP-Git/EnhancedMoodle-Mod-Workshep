@@ -760,3 +760,10 @@
 .path-mod-workshep #workshep-viewlet-flagging .loading::before {
 	content: url([[pix:mod_workshep|loading]]);
 }
+
+/* Team Evaluation */
+
+.path-mod-workshep .teamevalreport-feedback-container td.feedback {
+    border:none;
+    margin:none;
+}
