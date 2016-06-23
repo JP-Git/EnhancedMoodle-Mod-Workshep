@@ -879,4 +879,12 @@ case workshep::PHASE_CLOSED:
 default:
 }
 
+// Team Evaluation. We always need to see it, so it lives outside the massive switch().
+$teameval_plugin = core_plugin_manager::instance()->get_plugin_info('local_teameval');
+if ($teameval_plugin) {
+    $teameval_renderer = $PAGE->get_renderer('local_teameval');
+    $teameval = \local_teameval\output\team_evaluation_block::from_cmid($cm->id);
+    echo $teameval_renderer->render($teameval);
+}
+
 echo $output->footer();
