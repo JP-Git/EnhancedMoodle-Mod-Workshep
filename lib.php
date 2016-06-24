@@ -1885,6 +1885,11 @@ function workshep_reset_course_form_definition($mform) {
 
     $mform->addElement('advcheckbox', 'reset_workshep_phase', get_string('resetphase', 'mod_workshep'));
     $mform->addHelpButton('reset_workshep_phase', 'resetphase', 'mod_workshep');
+
+    $teameval_plugin = core_plugin_manager::instance()->get_plugin_info('local_teameval');
+    if ($teameval_plugin) {
+        \mod_workshep\evaluation_context::reset_course_form_definition($mform);
+    }
 }
 
 /**
@@ -1899,6 +1904,11 @@ function workshep_reset_course_form_defaults(stdClass $course) {
         'reset_workshep_assessments'    => 1,
         'reset_workshep_phase'          => 1,
     );
+
+    $teameval_plugin = core_plugin_manager::instance()->get_plugin_info('local_teameval');
+    if ($teameval_plugin) {
+        $defaults = array_merge($defaults, \mod_workshep\evaluation_context::reset_course_form_defaults());
+    }
 
     return $defaults;
 }
@@ -1931,11 +1941,20 @@ function workshep_reset_userdata(stdClass $data) {
     $course = $DB->get_record('course', array('id' => $data->courseid), '*', MUST_EXIST);
     $status = array();
 
+    $teameval_plugin = core_plugin_manager::instance()->get_plugin_info('local_teameval');
+
     foreach ($worksheprecords as $worksheprecord) {
         $cm = get_coursemodule_from_instance('workshep', $worksheprecord->id, $course->id, false, MUST_EXIST);
         $workshep = new workshep($worksheprecord, $cm, $course);
         $status = array_merge($status, $workshep->reset_userdata($data));
+
+        if ($teameval_plugin) {
+            $cminfo = get_fast_modinfo($cm->course)->get_cm($cm->id);
+            $evalcontext = new \mod_workshep\evaluation_context($workshep, $cminfo);
+            $status = array_merge($status, $evalcontext->reset_userdata($data));
+        }
     }
+    
 
     return $status;
 }
