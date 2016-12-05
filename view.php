@@ -269,9 +269,11 @@ case workshep::PHASE_SUBMISSION:
 
         print_collapsible_region_start('', 'workshep-viewlet-allsubmissions', get_string('submissionsreport', 'workshep'));
         $perpage = get_user_preferences('workshep_perpage', 10);
-        $data = $workshep->prepare_grading_report_data($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
-
-        $data = $workshep->prepare_grading_report_data($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
+        if ($workshep->teammode) {
+            $data = $workshep->prepare_grading_report_data_grouped($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);    
+        } else {
+            $data = $workshep->prepare_grading_report_data($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
+        }
         if ($data) {
             $countparticipants = $workshep->count_participants();
             $countsubmissions = $workshep->count_submissions(array_keys($data->grades), $groupid);
@@ -298,7 +300,11 @@ case workshep::PHASE_SUBMISSION:
             $reportopts->workshepphase       = $workshep->phase;
 
             echo $output->render($pagingbar);
-            echo $output->render(new workshep_grading_report($data, $reportopts));
+            if($workshep->teammode) {
+                echo $output->render(new workshep_grouped_grading_report($data, $reportopts));
+            } else {
+                echo $output->render(new workshep_grading_report($data, $reportopts));
+            }
             echo $output->render($pagingbar);
             echo $output->perpage_selector($perpage);
         } else {
