@@ -2756,7 +2756,7 @@ SQL;
         }
     	
     	//initialise some vars
-        if (!in_array($sortby, array('name','submissiontitle','submissiongrade','gradinggrade'))) {
+        if (!in_array($sortby, array('name','submissiontitle','submissiongrade','submissionmodified','gradinggrade'))) {
             $sortby = 'name';
         }
     
@@ -2835,6 +2835,7 @@ SQL;
     		$gradeitem->submissiontitle = $v->title;
     		$gradeitem->submissiongrade = $this->real_grade($v->grade);
     		$gradeitem->submissionid = $v->id;
+            $gradeitem->submissionmodified = $v->timemodified;
     		$gradeitem->submissiongradeover = $this->real_grade($v->gradeover);
     		$gradeitem->submissiongradeoverby = $v->gradeoverby;
     		$gradeitem->submissionpublished = $v->published;
