@@ -63,7 +63,9 @@ $isreviewer             = ($USER->id == $assessment->reviewerid);
 $isauthor               = ($USER->id == $submission->authorid);
 
 if ($workshep->teammode) {
-    $isauthor = ($workshep->user_group($submission->authorid)->id == $workshep->user_group($USER->id)->id);
+    if (!empty($workshep->user_group($USER->id))) {
+        $isauthor = ($workshep->user_group($submission->authorid)->id == $workshep->user_group($USER->id)->id);
+    }
 }
 
 if ($canviewallsubmissions) {
