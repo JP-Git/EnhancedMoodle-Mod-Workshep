@@ -727,6 +727,7 @@ case workshep::PHASE_CLOSED:
     $reportopts->sorthow                = $sorthow;
     $reportopts->showsubmissiongrade    = true;
     $reportopts->showgradinggrade       = true;    
+    $reportopts->workshepphase          = $workshep->phase;
 
     if (!empty($finalgrades)) {
         print_collapsible_region_start('', 'workshep-viewlet-yourgrades', get_string('yourgrades', 'workshep'));
@@ -783,7 +784,6 @@ case workshep::PHASE_CLOSED:
             $reportopts->sorthow                = $sorthow;
             $reportopts->showsubmissiongrade    = true;
             $reportopts->showgradinggrade       = true;
-            $reportopts->workshepphase          = $workshep->phase;
             $reportopts->showdiscrepancy        = true;
 
             print_collapsible_region_start('', 'workshep-viewlet-gradereport', get_string('gradesreport', 'workshep'));
