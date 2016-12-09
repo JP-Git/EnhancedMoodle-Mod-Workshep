@@ -2874,18 +2874,16 @@ SQL;
                     $val->gradinggradeover = $this->real_grading_grade($val->gradinggradeover);
 
     				$findusers[] = $val->userid;
-                    $reviewer_submissions[$v->submissionid][$val->assessmentid] = $val->grade;
+
+                    if ((!is_null($val->grade)) and ($val->weight > 0)) {
+                        $reviewer_submissions[$v->submissionid][$val->assessmentid] = $val->grade;
+                    }
     			}
     			$v->reviewedby = $vals;
     		} else {
     			$v->reviewedby = array();
     		}
     	}
-        
-        
-        
-        
-        
         
         //Highlight discrepancies
         $flags = array();
