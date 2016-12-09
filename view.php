@@ -598,6 +598,7 @@ case workshep::PHASE_EVALUATION:
             $reportopts->showsubmissiongrade    = true;
             $reportopts->showgradinggrade       = true;
             $reportopts->showdiscrepancy        = true;
+            $reportopts->workshepphase          = $workshep->phase;
 
             print_collapsible_region_start('', 'workshep-viewlet-gradereport', get_string('gradesreport', 'workshep'));
             echo $output->box_start('generalbox gradesreport');
