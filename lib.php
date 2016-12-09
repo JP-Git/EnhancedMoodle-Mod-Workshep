@@ -78,7 +78,7 @@ function workshep_add_instance(stdclass $workshep) {
     $workshep->useexamples           = (int)!empty($workshep->useexamples);
     $workshep->usepeerassessment     = 1;
     $workshep->useselfassessment     = (int)!empty($workshep->useselfassessment);
-    $workshep->usecalibration        = (int)!empty($workshep->useselfassessment);
+    $workshep->usecalibration        = (int)!empty($workshep->usecalibration);
     $workshep->latesubmissions       = (int)!empty($workshep->latesubmissions);
     $workshep->phaseswitchassessment = (int)!empty($workshep->phaseswitchassessment);
     $workshep->teammode              = (int)!empty($workshep->teammode);
