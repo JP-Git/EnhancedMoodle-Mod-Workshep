@@ -2,6 +2,8 @@
 
 namespace mod_workshep;
 
+use stdClass;
+
 // I'm not sure this is ever actually necessary. Pretty much anytime evaluation_context is called
 // locallib has already been included... but if it fucks up, uncomment this line.
 // require_once(dirname(dirname(__FILE__)) . '/locallib.php');
@@ -70,7 +72,7 @@ SQL;
 
         if (\workshep::PHASE_CLOSED == $this->workshep->phase) {
             // push the grades into the gradebook
-            $workshep = new stdclass();
+            $workshep = new stdClass();
             foreach ($this as $property => $value) {
                 $workshep->{$property} = $value;
             }
