@@ -62,6 +62,12 @@ $canoverridegrades      = has_capability('mod/workshep:overridegrades', $workshe
 $isreviewer             = ($USER->id == $assessment->reviewerid);
 $isauthor               = ($USER->id == $submission->authorid);
 
+if ($workshep->teammode) {
+    if (!empty($workshep->user_group($USER->id))) {
+        $isauthor = ($workshep->user_group($submission->authorid)->id == $workshep->user_group($USER->id)->id);
+    }
+}
+
 if ($canviewallsubmissions) {
     // check this flag against the group membership yet
     if (groups_get_activity_groupmode($workshep->cm) == SEPARATEGROUPS) {
@@ -320,7 +326,7 @@ if ($isreviewer) {
         'showweight'    => true,
     );
     $displayassessment = $workshep->prepare_assessment($assessment, $mform, $options);
-	
+
     if ($isauthor and $workshep->submitterflagging) {
         if ($assessment->submitterflagged == 1) {
             //unflag
@@ -330,7 +336,7 @@ if ($isreviewer) {
             $displayassessment->add_action($workshep->flag_url($assessment->id, $PAGE->url), get_string('flagassessment', 'workshep'));
         }
     }
-	
+
     echo $output->render($displayassessment);
 }
 
