@@ -38,6 +38,19 @@ class evaluation_context extends \local_teameval\evaluation_context {
         return false;
     }
 
+    public function default_deadline() {
+        $duedate = max($this->workshep->assessmentend, $this->workshep->submissionend);
+        if ($duedate) {
+            return $duedate + 604800;
+        } else {
+            return $this->cm->added + 604800;
+        }
+    }
+
+    public function minimum_deadline() {
+        return $this->workshep->assessmentend;
+    }
+
     public function group_for_user($userid) {
         return $this->workshep->user_group($userid);
     }
@@ -57,12 +70,12 @@ class evaluation_context extends \local_teameval\evaluation_context {
     public function grade_for_group($groupid) {
         global $DB;
         $sql = <<<SQL
-SELECT s.grade 
-    FROM {workshep_submissions} s 
-        LEFT JOIN {groups_members} m ON s.authorid = m.userid 
-    WHERE s.workshepid = :workshepid 
+SELECT s.grade
+    FROM {workshep_submissions} s
+        LEFT JOIN {groups_members} m ON s.authorid = m.userid
+    WHERE s.workshepid = :workshepid
         AND m.groupid = :groupid
-    ORDER BY s.timemodified DESC 
+    ORDER BY s.timemodified DESC
     LIMIT 1;
 SQL;
         return $DB->get_field_sql($sql, ['workshepid' => $this->workshep->id, 'groupid' => $groupid]);
