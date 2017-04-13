@@ -59,7 +59,7 @@ class backup_workshep_activity_structure_step extends backup_activity_structure_
             'conclusion', 'conclusionformat', 'overallfeedbackmode',
             'overallfeedbackfiles', 'overallfeedbackmaxbytes', 'teammode',
 			'examplescompare', 'examplesreassess', 'numexamples',
-			'calibrationphase', 'usecalibration', 'calibrationmethod',
+			'calibrationphase', 'usecalibration', 'autorecalculate', 'calibrationmethod',
 			));
 
         // assessment forms definition

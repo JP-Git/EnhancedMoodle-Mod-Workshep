@@ -46,9 +46,13 @@
         <FIELD NAME="numexamples" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="Number of example submissions to show. 0 means all."/>
         <FIELD NAME="teammode" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="One submission per group"/>
         <FIELD NAME="usecalibration" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="bool: Whether or not a calibration phase is being used"/>
+        <FIELD NAME="autorecalculate" TYPE="int" LENGTH="2" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="bool: Whether or not auto recalculate all calibrations on submission"/>
         <FIELD NAME="calibrationphase" TYPE="int" LENGTH="3" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="The phase AFTER which to place the calibration phase, or 0 if calibration is not being used"/>
         <FIELD NAME="calibrationmethod" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="The type of the current calibration method used in this workshep"/>
-		<FIELD NAME="submitterflagging" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false" COMMENT="Allow users to flag assessments as unfair" DEFAULT="1" />
+        <FIELD NAME="calibrationcomparison" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false" COMMENT="The stricter the comparison, the closer the marker had to be to the provided example assessments." DEFAULT="5" />
+        <FIELD NAME="calibrationconsistency" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false" COMMENT="A stricter consistency means markers must be more accurate with all of their example assessments." DEFAULT="5" />
+        <FIELD NAME="submitterflagging" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false" COMMENT="Allow users to flag assessments as unfair" DEFAULT="1" />
+        <FIELD NAME="nosubmissionrequired" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false" COMMENT="Allow students to be reviewed without a submission." DEFAULT="0" />
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

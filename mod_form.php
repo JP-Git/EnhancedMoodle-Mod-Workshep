@@ -171,6 +171,11 @@ class mod_workshep_mod_form extends moodleform_mod {
         $mform->addElement('checkbox','teammode',$label,$text,$params);
         $mform->addHelpButton('teammode','teammode','workshep');
 
+        $label = get_string('nosubmissionrequired', 'workshep');
+        $text = get_string('nosubmissionrequired_desc', 'workshep');
+        $mform->addElement('checkbox', 'nosubmissionrequired', $label, $text);
+        $mform->addHelpButton('nosubmissionrequired','nosubmissionrequired','workshep');
+
         // Assessment settings --------------------------------------------------------
         $mform->addElement('header', 'assessmentsettings', get_string('assessmentsettings', 'workshep'));
 
@@ -261,6 +266,11 @@ class mod_workshep_mod_form extends moodleform_mod {
         $mform->addElement('checkbox', 'usecalibration', $label, $text);
         $mform->addHelpButton('usecalibration', 'usecalibration', 'workshep');
         
+        $workshepcalibrationconfig = get_config('workshepcalibration_examples');
+        $label = get_string('autorecalculate', 'workshepcalibration_examples');
+        $mform->addElement('checkbox', 'autorecalculate', $label);
+        $mform->setDefault('autorecalculate', $workshepcalibrationconfig->autorecalculate);
+
         $label = get_string('calibrationphase', 'workshep');
         $values = array(
             workshep::PHASE_SETUP => get_string('beforesubmission', 'workshep'),
@@ -271,6 +281,24 @@ class mod_workshep_mod_form extends moodleform_mod {
         $mform->disabledIf('calibrationphase', 'usecalibration');
         $mform->setDefault('calibrationphase', workshep::PHASE_SUBMISSION);
         $mform->addHelpButton('calibrationphase','calibrationphase','workshep');
+
+        $options = array();
+        for ($i = 9; $i >= 1; $i--) {
+            $options[$i] = get_string('comparisonlevel' . $i, 'workshepcalibration_examples');
+        }
+        $label = get_string('comparison', 'workshepcalibration_examples');
+        $mform->addElement('select', 'calibrationcomparison', $label, $options);
+        $mform->disabledIf('calibrationcomparison', 'usecalibration');
+        $mform->addHelpButton('calibrationcomparison', 'comparison', 'workshepcalibration_examples');
+        $mform->setDefault('calibrationcomparison', (empty($this->current->calibrationcomparison) ?
+                                                     $workshepcalibrationconfig->accuracy : $this->current->calibrationcomparison));
+
+        $label = get_string('consistency', 'workshepcalibration_examples');
+        $mform->addElement('select', 'calibrationconsistency', $label, $options);
+        $mform->disabledIf('calibrationconsistency', 'usecalibration');
+        $mform->addHelpButton('calibrationconsistency', 'consistency', 'workshepcalibration_examples');
+        $mform->setDefault('calibrationconsistency', (empty($this->current->calibrationconsistency) ?
+                                                      $workshepcalibrationconfig->consistence : $this->current->calibrationconsistency));
 
         // Access control -------------------------------------------------------------
         $mform->addElement('header', 'accesscontrol', get_string('availability', 'core'));

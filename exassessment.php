@@ -102,6 +102,17 @@ if ($mform->is_cancelled()) {
     // Let the grading strategy subplugin save its data.
     $rawgrade = $strategy->save_assessment($assessment, $data);
 
+    // Run the auto calibration scores if enabled.
+    if ($workshep->usecalibration && $workshep->autorecalculate) {
+        $plugindefaults = get_config('workshepcalibration_examples');
+        $calibration = $workshep->calibration_instance();
+        $calibrationdata = new stdclass();
+        $calibrationdata->comparison = $workshep->calibrationcomparison;
+        $calibrationdata->consistency = $workshep->calibrationconsistency;
+        $calibration->calculate_calibration_scores($calibrationdata);   // updates 'gradinggrade' in {workshep_assessments}
+        $workshep->log('update calibration scores');
+    }
+
     // Store the data managed by the workshep core.
     $coredata = (object)array('id' => $assessment->id);
     if (isset($data->feedbackauthor_editor)) {

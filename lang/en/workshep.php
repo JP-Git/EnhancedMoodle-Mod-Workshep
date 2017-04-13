@@ -211,6 +211,12 @@ $string['nosubmissionfound'] = 'No submission found for this user';
 $string['nosubmissions'] = 'No submissions yet in this Enhanced Workshop';
 $string['nothingtoreview'] = 'Nothing to review';
 $string['notassessed'] = 'Not assessed yet';
+$string['nosubmissionrequired'] = 'No Submission Required';
+$string['nosubmissionrequired_content'] = 'Submission for {$a->fullname}';
+$string['nosubmissionrequired_desc'] = 'Allow students to be reviewed without a submission.';
+$string['nosubmissionrequired_generation'] = 'Auto generate submissions';
+$string['nosubmissionrequired_help'] = 'If enabled, The reviewer will be able to mark a student or group of students without a submission';
+$string['nosubmissionrequired_title'] = '{$a} Submission';
 $string['notoverridden'] = 'Not overridden';
 $string['noworksheps'] = 'There are no Enhanced Workshops in this course';
 $string['noyoursubmission'] = 'You have not submitted your work yet';
@@ -388,10 +394,10 @@ $string['examplesreassess'] = 'Example reassessment';
 $string['examplesreassess_desc'] = 'Allow students to reassess example submissions';
 $string['examplesrequired'] = 'You must select <strong>Use examples</strong> to set up <strong>Calibrated</strong> grading.';
 $string['examplesmoderequired'] = 'Do not use <strong>voluntary</strong> example assessment when using <strong>Calibrated</strong> grading.';
-$string['exampleassessmentsname'] = '{$a}\'s example assessments';
+$string['exampleassessmentsname'] = '{$a}s example assessments';
 $string['explanation'] = 'Calibration score breakdown for {$a}';
 $string['yourexplanation'] = 'Your calibration score breakdown';
-$string['showexamples'] = 'Show {$a}\'s example assessments';
+$string['showexamples'] = 'Show {$a}s example assessments';
 $string['showyourexamples'] = 'Show your example assessments';
 $string['showsubmission'] = 'Show Submission';
 
@@ -478,4 +484,8 @@ $string['calculatescores'] = 'Calculate Calibration Scores';
 $string['yourcalibration'] = 'Your calibration results';
 $string['calibrationcompletion'] = '{$a->num} / {$a->den} users have completed example assessments.';
 
+// UNSW3-83
+$string['submitonbehalfofothers'] = 'Submit on behalf of others';
 
+// UNSW3-115
+$string['submissiononbehalfof'] = 'Submission on behalf of {$a}';

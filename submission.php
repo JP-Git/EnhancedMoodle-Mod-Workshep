@@ -32,6 +32,7 @@ $edit = optional_param('edit', false, PARAM_BOOL); // Open the page for editing?
 $assess = optional_param('assess', false, PARAM_BOOL); // Instant assessment required.
 $delete = optional_param('delete', false, PARAM_BOOL); // Submission removal requested.
 $confirm = optional_param('confirm', false, PARAM_BOOL); // Submission removal request confirmed.
+$sid = optional_param('sid', false, PARAM_INT); // The student id to add a submission in behalf of.
 
 $cm = get_coursemodule_from_id('workshep', $cmid, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
@@ -48,6 +49,12 @@ $PAGE->set_url($workshep->submission_url(), array('cmid' => $cmid, 'id' => $id))
 
 if ($edit) {
     $PAGE->url->param('edit', $edit);
+}
+
+if ($sid) {
+    $userid = $sid;
+} else {
+    $userid = $USER->id;
 }
 
 if ($id) { // submission is specified
@@ -67,10 +74,10 @@ if ($id) { // submission is specified
     $event->trigger();
 
 } else { // no submission specified
-    if (!$submission = $workshep->get_submission_by_author($USER->id)) {
+    if (!$submission = $workshep->get_submission_by_author($userid)) {
         $submission = new stdclass();
         $submission->id = null;
-        $submission->authorid = $USER->id;
+        $submission->authorid = $userid;
         $submission->example = 0;
         $submission->grade = null;
         $submission->gradeover = null;
@@ -80,10 +87,10 @@ if ($id) { // submission is specified
     }
 }
 
-$ownsubmission  = $submission->authorid == $USER->id;
+$ownsubmission  = $submission->authorid == $userid;
 if ($workshep->teammode && !$ownsubmission) {
     $group = $workshep->user_group($submission->authorid);
-    $ownsubmission = groups_is_member($group->id,$USER->id);
+    $ownsubmission = groups_is_member($group->id,$userid);
 }
 $canviewall     = has_capability('mod/workshep:viewallsubmissions', $workshep->context);
 $cansubmit      = has_capability('mod/workshep:submit', $workshep->context);
@@ -91,18 +98,18 @@ $canallocate    = has_capability('mod/workshep:allocate', $workshep->context);
 $canpublish     = has_capability('mod/workshep:publishsubmissions', $workshep->context);
 $canoverride    = (($workshep->phase == workshep::PHASE_EVALUATION) and has_capability('mod/workshep:overridegrades', $workshep->context));
 $candeleteall   = has_capability('mod/workshep:deletesubmissions', $workshep->context);
-$userassessment = $workshep->get_assessment_of_submission_by_user($submission->id, $USER->id);
+$userassessment = $workshep->get_assessment_of_submission_by_user($submission->id, $userid);
 $isreviewer     = !empty($userassessment);
-$editable       = ($cansubmit and $ownsubmission);
+$editable       = ($sid or $cansubmit and $ownsubmission);
 $deletable      = $candeleteall;
 $ispublished    = ($workshep->phase == workshep::PHASE_CLOSED
                     and $submission->published == 1
                     and has_capability('mod/workshep:viewpublishedsubmissions', $workshep->context));
 
-if (empty($submission->id) and !$workshep->creating_submission_allowed($USER->id)) {
+if (empty($submission->id) and !$workshep->creating_submission_allowed($userid)) {
     $editable = false;
 }
-if ($submission->id and !$workshep->modifying_submission_allowed($USER->id)) {
+if ($submission->id and !$workshep->modifying_submission_allowed($userid)) {
     $editable = false;
 }
 
@@ -124,7 +131,7 @@ if ($canviewall) {
 if ($editable and $workshep->useexamples and $workshep->examplesmode == workshep::EXAMPLES_BEFORE_SUBMISSION
         and !has_capability('mod/workshep:manageexamples', $workshep->context)) {
     // check that all required examples have been assessed by the user
-    $examples = $workshep->get_examples_for_reviewer($USER->id);
+    $examples = $workshep->get_examples_for_reviewer($userid);
     foreach ($examples as $exampleid => $example) {
         if (is_null($example->grade)) {
             $editable = false;
@@ -177,9 +184,9 @@ if ($submission->id and ($ownsubmission or $canviewall or $isreviewer)) {
     print_error('nopermissions', 'error', $workshep->view_url(), 'view or create submission');
 }
 
-if ($assess and $submission->id and !$isreviewer and $canallocate and $workshep->assessing_allowed($USER->id)) {
+if ($assess and $submission->id and !$isreviewer and $canallocate and $workshep->assessing_allowed($userid)) {
     require_sesskey();
-    $assessmentid = $workshep->add_allocation($submission, $USER->id);
+    $assessmentid = $workshep->add_allocation($submission, $userid);
     redirect($workshep->assess_url($assessmentid));
 }
 
@@ -209,7 +216,7 @@ if ($edit) {
         if (is_null($submission->id)) {
             $formdata->workshepid     = $workshep->id;
             $formdata->example        = 0;
-            $formdata->authorid       = $USER->id;
+            $formdata->authorid       = $userid;
             $formdata->timecreated    = $timenow;
             $formdata->feedbackauthorformat = editors_get_preferred_format();
         }
@@ -292,7 +299,7 @@ if (!$edit and ($canoverride or $canpublish)) {
         $record->id = $submission->id;
         if ($canoverride) {
             $record->gradeover = $workshep->raw_grade_value($data->gradeover, $workshep->grade);
-            $record->gradeoverby = $USER->id;
+            $record->gradeoverby = $userid;
             $record->feedbackauthor = $data->feedbackauthor;
             $record->feedbackauthorformat = $data->feedbackauthorformat;
         }
@@ -319,7 +326,12 @@ if ($edit) {
 $output = $PAGE->get_renderer('mod_workshep');
 echo $output->header();
 echo $output->heading(format_string($workshep->name), 2);
-echo $output->heading(get_string('mysubmission', 'workshep'), 3);
+if ($sid) {
+    $user = $DB->get_record('user', array('id' => $userid));
+    echo $output->heading(get_string('submissiononbehalfof', 'workshep', fullname($user)), 3);
+} else {
+    echo $output->heading(get_string('mysubmission', 'workshep'), 3);
+}
 
 // show instructions for submitting as thay may contain some list of questions and we need to know them
 // while reading the submitted answer
@@ -386,7 +398,7 @@ if (!$delete) {
         echo $output->single_button($url, get_string('deletesubmission', 'workshep'), 'get');
     }
 
-    if ($submission->id and !$edit and !$isreviewer and $canallocate and $workshep->assessing_allowed($USER->id)) {
+    if ($submission->id and !$edit and !$isreviewer and $canallocate and $workshep->assessing_allowed($userid)) {
         $url = new moodle_url($PAGE->url, array('assess' => 1));
         echo $output->single_button($url, get_string('assess', 'workshep'), 'post');
     }
@@ -413,7 +425,7 @@ if ($isreviewer) {
     $assessment = $workshep->prepare_assessment($userassessment, $mform, $options);
     $assessment->title = get_string('assessmentbyyourself', 'workshep');
 
-    if ($workshep->assessing_allowed($USER->id)) {
+    if ($workshep->assessing_allowed($userid)) {
         if (is_null($userassessment->grade)) {
             $assessment->add_action($workshep->assess_url($assessment->id), get_string('assess', 'workshep'));
         } else {
@@ -439,7 +451,7 @@ if (has_capability('mod/workshep:viewallassessments', $workshep->context) or ($o
     $assessments    = $workshep->get_assessments_of_submission($submission->id);
     $showreviewer   = has_capability('mod/workshep:viewreviewernames', $workshep->context);
     foreach ($assessments as $assessment) {
-        if ($assessment->reviewerid == $USER->id) {
+        if ($assessment->reviewerid == $userid) {
             // own assessment has been displayed already
             continue;
         }

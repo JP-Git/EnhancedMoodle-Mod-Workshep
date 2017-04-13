@@ -3,6 +3,8 @@
 $string['pluginname'] = 'Calibrated against example assessments';
 $string['settings'] = 'Calibration settings';
 
+$string['autorecalculate'] = 'Recalculate calibrations';
+$string['configautorecalculate'] = 'Recalculate calibrations on submission';
 $string['comparison'] = 'Comparison against example assessments';
 $string['comparison_help'] = <<<MDOWN
 This setting specifies how strict the comparison should be. The stricter the comparison, the closer the marker had to be to the provided example assessments.

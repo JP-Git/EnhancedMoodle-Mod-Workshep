@@ -983,7 +983,6 @@ HTML;
         $options = $report->options;
         
         $table = new html_table();
-        $table->attributes['class'] = 'grading-report';
         
         $sortbyfirstname = $this->helper_sortable_heading(get_string('firstname'), 'firstname', $options->sortby, $options->sorthow);
         $sortbylastname = $this->helper_sortable_heading(get_string('lastname'), 'lastname', $options->sortby, $options->sorthow);
@@ -1002,7 +1001,6 @@ HTML;
             
             $reviewercell = new html_table_cell();
             $reviewercell->text = $this->helper_calibration_report_reviewer($reviewer, $report->reviewers);
-            $reviewercell->attributes['class'] = 'participant';
             
             $row->cells[] = $reviewercell;
             

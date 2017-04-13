@@ -71,5 +71,49 @@ function xmldb_workshep_upgrade($oldversion) {
     // Moodle v3.1.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2016120600) {
+        // Add field nosubmissionrequired to the table workshep.
+        $table = new xmldb_table('workshep');
+        $field = new xmldb_field('nosubmissionrequired', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2016120600, 'workshep');
+    }
+
+    if ($oldversion < 2016120601) {
+        // Add field autorecalculate to the table workshep.
+        $table = new xmldb_table('workshep');
+        $field = new xmldb_field('autorecalculate', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2016120601, 'workshep');
+    }
+
+    if ($oldversion < 2016120602) {
+        // Add field calibration comparison to the table workshep.
+        $table = new xmldb_table('workshep');
+        $field = new xmldb_field('calibrationcomparison', XMLDB_TYPE_INTEGER, '5', null, XMLDB_NOTNULL, null, '0');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Add field calibration comparison to the table workshep.
+        $table = new xmldb_table('workshep');
+        $field = new xmldb_field('calibrationconsistency', XMLDB_TYPE_INTEGER, '5', null, XMLDB_NOTNULL, null, '0');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2016120602, 'workshep');
+    }
+
     return true;
 }
