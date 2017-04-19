@@ -5420,22 +5420,23 @@ class workshep_calibration_report implements renderable {
         }
 
 
-        list($userids, $params) = $DB->get_in_or_equal(array_keys($reviewers), SQL_PARAMS_NAMED);
-
         $userexamples = array();
 
-        if ($workshep->numexamples > 0) {
-            $where = "workshepid = :workshepid AND userid $userids";
-            $params['workshepid'] = $workshep->id;
-            $rslt = $DB->get_records_select("workshep_user_examples", $where, $params);
-            foreach($rslt as $v) {
-                $ex = $exemplars[$v->submissionid];
-                $userexamples[$v->userid][$ex->id] = clone $ex;
-            }
-        } else {
-            foreach($reviewers as $v) {
-                foreach($exemplars as $ex) {
-                    $userexamples[$v->id][$ex->id] = clone $ex;
+        if (count($reviewers) > 0) {
+            list($userids, $params) = $DB->get_in_or_equal(array_keys($reviewers), SQL_PARAMS_NAMED);
+            if ($workshep->numexamples > 0) {
+                $where = "workshepid = :workshepid AND userid $userids";
+                $params['workshepid'] = $workshep->id;
+                $rslt = $DB->get_records_select("workshep_user_examples", $where, $params);
+                foreach($rslt as $v) {
+                    $ex = $exemplars[$v->submissionid];
+                    $userexamples[$v->userid][$ex->id] = clone $ex;
+                }
+            } else {
+                foreach($reviewers as $v) {
+                    foreach($exemplars as $ex) {
+                        $userexamples[$v->id][$ex->id] = clone $ex;
+                    }
                 }
             }
         }
