@@ -3873,7 +3873,7 @@ SQL;
     public function submitonbehalfofothers() {
         global $COURSE, $OUTPUT, $USER;
 
-        if ($enrolled = get_enrolled_users(context_course::instance($COURSE->id), 'mod/workshep:submit', 0, 'u.id, u.firstname, u.lastname')) {
+        if ($enrolled = get_enrolled_users($this->context, 'mod/workshep:submit', 0, 'u.id, u.firstname, u.lastname')) {
             unset($enrolled[$USER->id]);
             $enrolled = array_map(function ($e) {
                 return $e->firstname . ' ' . $e->lastname;
