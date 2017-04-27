@@ -133,7 +133,7 @@ case workshep::PHASE_SETUP:
     	    echo $output->box(get_string('teammode_ungroupedwarning', 'workshep', $a), 'generalbox warning nogroupusers');
     	}
     }
-    
+
     if (trim($workshep->intro)) {
         print_collapsible_region_start('', 'workshep-viewlet-intro', get_string('introduction', 'workshep'));
         echo $output->box(format_module_intro('workshep', $workshep, $workshep->cm->id), 'generalbox');
@@ -224,7 +224,7 @@ case workshep::PHASE_SUBMISSION:
             echo $output->box_end();
             print_collapsible_region_end();
         }
-        
+
         print_collapsible_region_start('', 'workshep-viewlet-ownsubmission', get_string('yoursubmission', 'workshep'));
         echo $output->box_start('generalbox ownsubmission');
 
@@ -361,7 +361,7 @@ case workshep::PHASE_SUBMISSION:
     break;
 
 case workshep::PHASE_CALIBRATION:
-    
+
     if (!$nosubmissionrequired && has_capability('mod/workshep:viewallsubmissions', $PAGE->context)) {
         $workshep->submitonbehalfofothers();
     }
@@ -396,31 +396,31 @@ case workshep::PHASE_CALIBRATION:
             }
         }
         echo $output->box_end();
-        print_collapsible_region_end();        
+        print_collapsible_region_end();
     }
-    
+
     if (has_capability('mod/workshep:overridegrades', $workshep->context)) {
         $calibration = $workshep->calibration_instance();
         $form = $calibration->get_settings_form(new moodle_url($workshep->calibrate_url(),
                 compact('sortby', 'sorthow', 'page')));
         $form->display();
-        
+
         $options = new stdclass;
         $options->sortby = $sortby;
         $options->sorthow = $sorthow;
-        
+
         $report = new workshep_calibration_report($workshep, $options);
         echo $output->render($report);
     }
 
 break;
-    
+
 
 case workshep::PHASE_ASSESSMENT:
 
     $ownsubmissionexists = null;
     if (!$nosubmissionrequired && has_capability('mod/workshep:submit', $PAGE->context)) {
-        
+
         if($workshep->usecalibration and $workshep->calibrationphase < workshep::PHASE_ASSESSMENT) {
             $calibrator = $workshep->calibration_instance();
             $calibration_renderer = $PAGE->get_renderer('workshepcalibration_'.$workshep->calibrationmethod);
@@ -431,7 +431,7 @@ case workshep::PHASE_ASSESSMENT:
             echo $output->box_end();
             print_collapsible_region_end();
         }
-        
+
         if ($ownsubmission = $workshep->get_submission_by_author($USER->id)) {
             print_collapsible_region_start('', 'workshep-viewlet-ownsubmission', get_string('yoursubmission', 'workshep'), false, true);
             echo $output->box_start('generalbox ownsubmission');
@@ -494,6 +494,19 @@ case workshep::PHASE_ASSESSMENT:
             echo $output->render($pagingbar);
             echo $output->perpage_selector($perpage);
             echo $output->box_end();
+            print_collapsible_region_end();
+        }
+
+        if ($workshep->usecalibration) {
+            $calibration = $workshep->calibration_instance();
+
+            $options = new stdclass;
+            $options->sortby = $sortby;
+            $options->sorthow = $sorthow;
+
+            print_collapsible_region_start('', 'workshep-viewlet-calibrationreport', get_string('calibration', 'workshep'), '', true);
+            $report = new workshep_calibration_report($workshep, $options);
+            echo $output->render($report);
             print_collapsible_region_end();
         }
     }
@@ -632,7 +645,7 @@ case workshep::PHASE_EVALUATION:
                 $form = $evaluator->get_settings_form(new moodle_url($workshep->aggregate_url(),
                         compact('sortby', 'sorthow', 'page')));
                 $form->display();
-				
+
 	            if ($evaluator->has_messages()) {
 	                $evaluator->display_messages();
 	            }
@@ -699,7 +712,7 @@ case workshep::PHASE_EVALUATION:
         print_collapsible_region_end();
     }
     if (has_capability('mod/workshep:submit', $PAGE->context)) {
-        
+
         if($workshep->usecalibration) {
             $calibrator = $workshep->calibration_instance();
             $calibration_renderer = $PAGE->get_renderer('workshepcalibration_'.$workshep->calibrationmethod);
@@ -710,7 +723,7 @@ case workshep::PHASE_EVALUATION:
             echo $output->box_end();
             print_collapsible_region_end();
         }
-        
+
         print_collapsible_region_start('', 'workshep-viewlet-ownsubmission', get_string('yoursubmission', 'workshep'));
         echo $output->box_start('generalbox ownsubmission');
         if ($submission = $workshep->get_submission_by_author($USER->id)) {
@@ -760,9 +773,9 @@ case workshep::PHASE_CLOSED:
         echo $output->box(format_text($conclusion, $workshep->conclusionformat, array('overflowdiv'=>true)), array('generalbox', 'conclusion'));
         print_collapsible_region_end();
     }
-    
+
     $finalgrades = $workshep->get_gradebook_grades($USER->id);
-    
+
     $groupid = groups_get_activity_group($workshep->cm, true);
     if ($workshep->teammode) {
     	$data = $workshep->prepare_grading_report_data_grouped($USER->id, $groupid, 0, 1, $sortby, $sorthow);
@@ -771,15 +784,15 @@ case workshep::PHASE_CLOSED:
     }
     $showauthornames    = has_capability('mod/workshep:viewauthornames', $workshep->context);
     $showreviewernames  = has_capability('mod/workshep:viewreviewernames', $workshep->context);
-    
+
     $reportopts = new stdClass;
     $reportopts->showauthornames        = $showauthornames;
     $reportopts->showreviewernames      = $showreviewernames;
     $reportopts->sortby                 = $sortby;
     $reportopts->sorthow                = $sorthow;
     $reportopts->showsubmissiongrade    = true;
-    $reportopts->showgradinggrade       = true;    
-    
+    $reportopts->showgradinggrade       = true;
+
     if (!empty($finalgrades)) {
         print_collapsible_region_start('', 'workshep-viewlet-yourgrades', get_string('yourgrades', 'workshep'));
         echo $output->box_start('generalbox grades-yourgrades');
@@ -793,24 +806,24 @@ case workshep::PHASE_CLOSED:
         print_collapsible_region_end();
     }
     if (has_capability('mod/workshep:viewallassessments', $PAGE->context)) {
-		
+
 		print_collapsible_region_start('', 'workshep-viewlet-flagging', get_string('submitterflagging', 'workshep'));
 		echo $output->box_start('generalbox center');
-        
+
 		echo html_writer::checkbox('flaggingon', '1', $workshep->submitterflagging, get_string('flaggingon', 'workshep'), array('onchange' => "set_flagging_on(this, {$cm->id});"));
-		
+
 		$url = new moodle_url('flagged_assessments.php', array('id' => $cm->id));
         echo $output->single_button($url, get_string('showflaggedassessments', 'workshep', 1));
 
 		echo $output->box_end();
 		print_collapsible_region_end();
-		
+
         $evaluator = $workshep->grading_evaluation_instance();
-		
+
         if ($evaluator->has_messages()) {
             $evaluator->display_messages();
         }
-		
+
         $perpage = get_user_preferences('workshep_perpage', 10);
         $groupid = groups_get_activity_group($workshep->cm, true);
         $groupmode = groups_get_activity_groupmode($workshep->cm);
@@ -849,11 +862,11 @@ case workshep::PHASE_CLOSED:
             }
             echo $output->render($pagingbar);
             echo $output->perpage_selector($perpage);
-            
+
             $url = new moodle_url("download.php", array("id" => $cm->id));
             $btn = new single_button($url, get_string('downloadmarks', 'workshep'), 'get');
             echo $output->render($btn);
-                        
+
             echo $output->box_end();
             print_collapsible_region_end();
         }
@@ -869,7 +882,7 @@ case workshep::PHASE_CLOSED:
             echo $output->box_end();
             print_collapsible_region_end();
         }
-        
+
         print_collapsible_region_start('', 'workshep-viewlet-ownsubmission', get_string('yoursubmission', 'workshep'));
         echo $output->box_start('generalbox ownsubmission');
         if ($submission = $workshep->get_submission_by_author($USER->id)) {
