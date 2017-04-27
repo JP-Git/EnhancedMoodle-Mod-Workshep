@@ -3883,12 +3883,11 @@ SQL;
             $url = new moodle_url('/mod/workshep/submission.php', array('cmid' => $this->cm->id, 'edit' => 'on'));
             $groupenrolled = array();
             $coursegroups = groups_get_all_groups($COURSE->id, 0, $this->cm->groupingid);
+            $coursegroups[0] = (object)['name' => get_string('nogroup', 'group')];
             $grouped = $this->get_grouped($enrolled);
             foreach ($grouped as $groupid => $users) {
-                if ($groupid) {
-                    foreach ($users as $userid => $fullname) {
-                        $groupenrolled['--'.$groupid][$coursegroups[$groupid]->name][$userid] = $fullname;
-                    }
+                foreach ($users as $userid => $fullname) {
+                    $groupenrolled['--'.$groupid][$coursegroups[$groupid]->name][$userid] = $fullname;
                 }
             }
             echo $OUTPUT->single_select($url, 'sid', $groupenrolled);
