@@ -527,7 +527,7 @@ case workshep::PHASE_ASSESSMENT:
     // can the examples be assessed?
     $examplesavailable = true;
 
-    if (!$examplesdone and $examplesmust and ($ownsubmissionexists === false)) {
+    if (!$examplesdone and $examplesmust and ($ownsubmissionexists === false) and !$workshep->nosubmissionrequired) {
         print_collapsible_region_start('', 'workshep-viewlet-examplesfail', get_string('exampleassessments', 'workshep'));
         echo $output->box(get_string('exampleneedsubmission', 'workshep'));
         print_collapsible_region_end();
