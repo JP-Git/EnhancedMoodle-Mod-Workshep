@@ -1179,7 +1179,7 @@ SQL;
         global $DB;
 
         $sql = "SELECT s.id, s.title, s.authorid,
-                       a.id AS assessmentid, a.grade, a.gradinggrade
+                       a.id AS assessmentid, a.grade, a.gradinggrade, a.reviewerid
                   FROM {workshep_submissions} s
              LEFT JOIN {workshep_assessments} a ON (a.submissionid = s.id AND a.weight = 1)
                  WHERE s.example = 1 AND s.workshepid = :workshepid

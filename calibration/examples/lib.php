@@ -109,7 +109,7 @@ class workshep_examples_calibration_method implements workshep_calibration_metho
         //fetch grader recordset for examples
         $userkeys = array();
         foreach($references as $r) {
-            $userkeys[$r->authorid] = $r->authorid;
+            $userkeys[$r->reviewerid] = $r->reviewerid;
         }
 
         $exemplars = $grader->get_assessments_recordset($userkeys,true);
