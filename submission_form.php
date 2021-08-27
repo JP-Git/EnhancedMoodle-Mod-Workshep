@@ -45,13 +45,21 @@ class workshep_submission_form extends moodleform {
         $mform->addRule('title', null, 'required', null, 'client');
         $mform->addRule('title', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        $mform->addElement('editor', 'content_editor', get_string('submissioncontent', 'workshep'), null, $contentopts);
-        $mform->setType('content', PARAM_RAW);
+        if ($workshep->submissiontypetext != WORKSHEP_SUBMISSION_TYPE_DISABLED) {
+            $mform->addElement('editor', 'content_editor', get_string('submissioncontent', 'workshep'), null, $contentopts);
+            $mform->setType('content_editor', PARAM_RAW);
+            if ($workshep->submissiontypetext == WORKSHEP_SUBMISSION_TYPE_REQUIRED) {
+                $mform->addRule('content_editor', null, 'required', null, 'client');
+            }
+        }
 
-        if ($workshep->nattachments > 0) {
+        if ($workshep->submissiontypefile != WORKSHEP_SUBMISSION_TYPE_DISABLED) {
             $mform->addElement('static', 'filemanagerinfo', get_string('nattachments', 'workshep'), $workshep->nattachments);
             $mform->addElement('filemanager', 'attachment_filemanager', get_string('submissionattachment', 'workshep'),
                                 null, $attachmentopts);
+            if ($workshep->submissiontypefile == WORKSHEP_SUBMISSION_TYPE_REQUIRED) {
+                $mform->addRule('attachment_filemanager', null, 'required', null, 'client');
+            }
         }
 
         $mform->addElement('hidden', 'id', $current->id);

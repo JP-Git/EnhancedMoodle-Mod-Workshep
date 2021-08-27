@@ -165,6 +165,13 @@ if ($edit and $canmanage) {
             // explicit cast to zero integer
             $formdata->attachment = 0;
         }
+
+        // BASE-3972: If submission only allows file submission, the value for contentformat is NULL.
+        // This produces an error because contentformat has a not null constraint and expects an integer.
+        if ($formdata->contentformat === null) {
+            $formdata->contentformat = FORMAT_MOODLE;
+        }
+
         // store the updated values or re-save the new example (re-saving needed because URLs are now rewritten)
         $DB->update_record('workshep_submissions', $formdata);
         redirect($workshep->exsubmission_url($formdata->id));
@@ -180,7 +187,8 @@ echo $output->heading(format_string($workshep->name), 2);
 if (trim($workshep->instructauthors)) {
     $instructions = file_rewrite_pluginfile_urls($workshep->instructauthors, 'pluginfile.php', $PAGE->context->id,
         'mod_workshep', 'instructauthors', null, workshep::instruction_editors_options($PAGE->context));
-    print_collapsible_region_start('', 'workshep-viewlet-instructauthors', get_string('instructauthors', 'workshep'));
+    print_collapsible_region_start('', 'workshep-viewlet-instructauthors', get_string('instructauthors', 'workshep'),
+            'workshep-viewlet-instructauthors-collapsed');
     echo $output->box(format_text($instructions, $workshep->instructauthorsformat, array('overflowdiv'=>true)), array('generalbox', 'instructions'));
     print_collapsible_region_end();
 }

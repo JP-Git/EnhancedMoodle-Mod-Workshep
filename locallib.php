@@ -205,14 +205,20 @@ class workshep {
     /** @var string */
     public $calibrationmethod;
 
-    /** @var bool allow submitters to flag assessments as unfair */
-    public $submitterflagging;
+	/** @var bool allow submitters to flag assessments as unfair */
+	public $submitterflagging;
 
     /**
      * @var workshep_strategy grading strategy instance
      * Do not use directly, get the instance using {@link workshep::grading_strategy_instance()}
      */
     protected $strategyinstance = null;
+
+    /** @var int Should the submission form show the text field? */
+    public $submissiontypetext;
+
+    /** @var int Should the submission form show the file attachment field? */
+    public $submissiontypefile;
 
     /**
      * @var workshep_evaluation grading evaluation instance
@@ -289,11 +295,11 @@ class workshep {
        $forms = array();
        foreach ($installed as $method => $methodpath) {
            if (file_exists($methodpath . '/lib.php')) {
-               //put exceptions here
-               if ($method == "calibrated") {
-                   if (($this->useexamples == false) || ($this->examplesmode == workshep::EXAMPLES_VOLUNTARY) || (count($this->get_examples_for_manager()) == 0))
-                       continue;
-               }
+    		   //put exceptions here
+    		   if ($method == "calibrated") {
+    			   if (($this->useexamples == false) || ($this->examplesmode == workshep::EXAMPLES_VOLUNTARY) || (count($this->get_examples_for_manager()) == 0))
+    				   continue;
+    		   }
                $forms[$method] = get_string('pluginname', 'workshepeval_' . $method);
            }
        }
@@ -472,7 +478,7 @@ class workshep {
 
     public function users_in_more_than_one_group() {
         global $DB;
-
+    
         $groupingid = $this->cm->groupingid;
         if ($groupingid) {
             $groupingsql = 'AND g.id in (select groupid from {groupings_groups} where groupingid = ?)';
@@ -696,11 +702,11 @@ SQL;
 
         $users = $DB->get_records_sql($sql, array_merge($params, $sortparams), $limitfrom, $limitnum);
 
-        if($this->teammode) {
-            return array_slice($this->get_grouped($users),1,null,true);
+		if($this->teammode) {
+        	return array_slice($this->get_grouped($users),1,null,true);
         }
 
-        return $users;
+		return $users;
     }
 
     /**
@@ -826,7 +832,7 @@ SQL;
                      unset($nogroupusers[$groupuserid]);
                  }
              }
-            return $nogroupusers;
+    		return $nogroupusers;
          }
 
     }
@@ -1072,23 +1078,23 @@ SQL;
 
        $groups = array();
        foreach($rslt as $a) {
-            $grslt = $this->user_group($a->authorid);
-            $g = $grslt->id;
-            if (isset($groups[$g])) {
-                if($groups[$g]->timemodified < $a->timemodified) {
-                    $groups[$g] = $a;
-                    $groups[$g]->group = $grslt;
-                }
-            } else {
-                $groups[$g] = $a;
-                $groups[$g]->group = $grslt;
-            }
+    	    $grslt = $this->user_group($a->authorid);
+    	    $g = $grslt->id;
+    	    if (isset($groups[$g])) {
+    		    if($groups[$g]->timemodified < $a->timemodified) {
+    			    $groups[$g] = $a;
+    			    $groups[$g]->group = $grslt;
+    		    }
+    	    } else {
+    		    $groups[$g] = $a;
+    		    $groups[$g]->group = $grslt;
+    	    }
        }
 
-        $submissions = array();
-        foreach($groups as $k => $v) {
-            $submissions[$v->id] = $v;
-        }
+    	$submissions = array();
+    	foreach($groups as $k => $v) {
+    		$submissions[$v->id] = $v;
+    	}
 
        return $submissions;
     }
@@ -1339,6 +1345,7 @@ SQL;
 
         //this sort order is important because we need an absolutely, rigidly identical result every single time we do this fetch
         $all_examples = $this->get_examples_for_manager('a.grade, s.title, s.id');
+        $all_examples = static::only_examples_with_reference_assessments($all_examples);
 
         //First we handle a user error: if they've asked for more examples than they've created
         if (count($all_examples) <= $n) {
@@ -1356,7 +1363,7 @@ SQL;
         //and good submissions, in that order.
 
         //Factored this out because we need it again elsewhere.
-        $slices = $this->slice_example_submissions($all_examples,$n);
+        $slices = static::slice_example_submissions($all_examples,$n);
 
         //Examples is just a flat array of submission IDs. This is the kind of thing we'll
         //be returning.
@@ -1467,10 +1474,14 @@ SQL;
                     $s_keys = array_keys($s);
 
                     //remove the bottom submission if necessary
-                    if ($picked_top_submission) {
-                        $k = $s_keys[0];
-                        $keys_to_remove[$k] = $s[$k];
-                    }
+                    //2019-08-21: I'm removing this because in the case of a small number of examples,
+                    //it can actually cause one submission to literally never be picked.
+                    //The edge it was trying to handle for is handled by the next part, where we remove
+                    //submissions with the same score.
+                    // if ($picked_top_submission) {
+                    //     $k = $s_keys[0];
+                    //     $keys_to_remove[$k] = $s[$k];
+                    // }
 
                     //remove submissions with the same score
                     foreach($s as $k => $a) {
@@ -1531,7 +1542,17 @@ SQL;
             return $returned_examples;
 
         }
+        
+    }
 
+    public static function only_examples_with_reference_assessments($examples) {
+        $refs = [];
+        foreach ($examples as $key => $value) {
+            if (!is_null($value->grade)) {
+                $refs[$key] = $value;
+            }
+        }
+        return $refs;
     }
 
     /**
@@ -1583,11 +1604,11 @@ SQL;
      */
     public function prepare_submission_summary(stdClass $record, $showauthor = false) {
 
-        //todo: give workshep_group_submission_summary a $this param
+		//todo: give workshep_group_submission_summary a $this param
         if($this->teammode) {
-            $summary        = new workshep_group_submission_summary($this, $record, $showauthor);
-            $summary->group = $this->user_group($record->authorid);
-            $summary->url   = $this->submission_url($record->id);
+        	$summary		= new workshep_group_submission_summary($this, $record, $showauthor);
+        	$summary->group	= $this->user_group($record->authorid);
+        	$summary->url   = $this->submission_url($record->id);
         } else {
             $summary        = new workshep_submission_summary($this, $record, $showauthor);
             $summary->url   = $this->submission_url($record->id);
@@ -1659,18 +1680,18 @@ SQL;
      * @return workshep_assessment
      */
     public function prepare_assessment(stdClass $record, $form, array $options = array()) {
-        return $this->prepare_assessment_with_submission($record, null, $form, $options);
-    }
+		return $this->prepare_assessment_with_submission($record, null, $form, $options);
+	}
 
-    public function prepare_assessment_with_submission(stdClass $record, $submission, $form, array $options = array()) {
+	public function prepare_assessment_with_submission(stdClass $record, $submission, $form, array $options = array()) {
 
         $assessment             = new workshep_assessment($this, $record, $options);
         $assessment->url        = $this->assess_url($record->id);
         $assessment->maxgrade   = $this->real_grade(100);
 
-        if (!is_null($submission)) {
-            $assessment->submission = $submission;
-        }
+		if (!is_null($submission)) {
+			$assessment->submission = $submission;
+		}
 
         if (!empty($options['showform']) and !($form instanceof workshep_assessment_form)) {
             debugging('Not a valid instance of workshep_assessment_form supplied', DEBUG_DEVELOPER);
@@ -1688,9 +1709,9 @@ SQL;
             $assessment->realgrade = $this->real_grade($record->grade);
         }
 
-        if (!empty($options['showflaggingresolution'])) {
-            $assessment->resolution = true;
-        }
+		if (!empty($options['showflaggingresolution'])) {
+			$assessment->resolution = true;
+		}
 
         return $assessment;
     }
@@ -1841,7 +1862,7 @@ SQL;
         $sql = "SELECT a.*,
                        $reviewerfields, $authorfields, $overbyfields,
                        s.title, s.content as submissioncontent,
-                       s.contentformat as submissionformat, s.attachment as submissionattachment
+					   s.contentformat as submissionformat, s.attachment as submissionattachment
                   FROM {workshep_assessments} a
             INNER JOIN {user} reviewer ON (a.reviewerid = reviewer.id)
             INNER JOIN {workshep_submissions} s ON (a.submissionid = s.id)
@@ -2119,7 +2140,7 @@ SQL;
      */
     public function grading_evaluation_instance() {
         global $CFG;    // because we require other libs here
-        //todo: verify this works with multiple eval methods
+		//todo: verify this works with multiple eval methods
         if (is_null($this->evaluationinstance)) {
             if (empty($this->evaluation)) {
                 $this->evaluation = 'best';
@@ -2359,9 +2380,9 @@ SQL;
         return new moodle_url('/mod/workshep/flag_assessment.php', array('asid' => $assessmentid, 'redirect' => $redirect->out(), 'unflag' => $unflag));
     }
 
-    public function flagged_assessments_url() {
-        return new moodle_url('/mod/workshep/flagged_assessments.php', array('id' => $this->cm->id));
-    }
+	public function flagged_assessments_url() {
+		return new moodle_url('/mod/workshep/flagged_assessments.php', array('id' => $this->cm->id));
+	}
 
     /**
      * Workshop wrapper around {@see add_to_log()}
@@ -2749,9 +2770,9 @@ SQL;
 
                     $s2 = $s; // Don't muck up our original array
 
-                    sort($s2,SORT_NUMERIC);
-                    $median = (count($s2) % 2) ?
-                     $s2[floor(count($s2)/2)] :
+                    sort($s2,SORT_NUMERIC); 
+                    $median = (count($s2) % 2) ? 
+                     $s2[floor(count($s2)/2)] : 
                      ($s2[floor(count($s2)/2)] + $s2[floor(count($s2)/2) - 1]) / 2;
 
                     //Now if there's any outside ±2 std dev flag them
@@ -2883,7 +2904,7 @@ SQL;
 
         $susers = array();
         if (!empty($CFG->enablesuspendeduserdisplay)) {
-            $susers = get_suspended_userids($this->context);
+            $susers = get_suspended_userids($this->context, true);
             foreach ($susers as $userid) {
                 if (isset($data->userinfo[$userid])) {
                     $data->userinfo[$userid]->suspended = true;
@@ -2906,8 +2927,8 @@ SQL;
      */
     public function prepare_grading_report_data_grouped($userid, $groups, $page, $perpage, $sortby, $sorthow) {
         global $CFG, $DB;
-
-        //First we're going to check permissions
+    	
+    	//First we're going to check permissions
         $canviewall     = has_capability('mod/workshep:viewallassessments', $this->context, $userid);
         $isparticipant  = has_any_capability(array('mod/workshep:submit', 'mod/workshep:peerassess'), $this->context, $userid);
 
@@ -2916,7 +2937,7 @@ SQL;
             return array();
         }
 
-        //initialise some vars
+    	//initialise some vars
         if (!in_array($sortby, array('name','submissiontitle','submissiongrade','submissionmodified','gradinggrade'))) {
             $sortby = 'name';
         }
@@ -2924,40 +2945,40 @@ SQL;
         if (!($sorthow === 'ASC' or $sorthow === 'DESC')) {
             $sorthow = 'ASC';
         }
-        $sorthow_const = $sorthow == 'ASC' ? SORT_ASC : SORT_DESC;
+    	$sorthow_const = $sorthow == 'ASC' ? SORT_ASC : SORT_DESC;
 
 
-        //We return two arrays: "grades" and "userinfo"
-        //Grades contains information about each submission, its reviewers and the grades they have been given
-        //Userinfo contains data about the reviewers for normalisation purposes
-        $grades = array();
-        $userinfo = array();
+    	//We return two arrays: "grades" and "userinfo"
+    	//Grades contains information about each submission, its reviewers and the grades they have been given
+    	//Userinfo contains data about the reviewers for normalisation purposes
+    	$grades = array();
+    	$userinfo = array();
 
-        //First thing we have to do is initialise the "grades" array with the group id and name
-        //We do this because the group might not have submitted anything
+    	//First thing we have to do is initialise the "grades" array with the group id and name
+    	//We do this because the group might not have submitted anything
+    
+    	$groups = groups_get_all_groups($this->course->id,0,$this->cm->groupingid);
+    	foreach($groups as $k => $g) {
+    		$gradeitem = new stdClass;
+    		$gradeitem->groupid = $k;
+    		$gradeitem->name = $g->name;
+    		$gradeitem->submissionid = null;
+    		$gradeitem->submissiontitle = null;
+    		$gradeitem->submissiongrade = null;
+    		$gradeitem->submissiongradeover = null;
+    		$gradeitem->submissiongradeoverby = null;
+    		$gradeitem->submissionpublished = null;
+    		$gradeitem->reviewedby = array();
+    		$gradeitem->reviewerof = array();
+    		$grades[$k] = $gradeitem;
+    	}
 
-        $groups = groups_get_all_groups($this->course->id,0,$this->cm->groupingid);
-        foreach($groups as $k => $g) {
-            $gradeitem = new stdClass;
-            $gradeitem->groupid = $k;
-            $gradeitem->name = $g->name;
-            $gradeitem->submissionid = null;
-            $gradeitem->submissiontitle = null;
-            $gradeitem->submissiongrade = null;
-            $gradeitem->submissiongradeover = null;
-            $gradeitem->submissiongradeoverby = null;
-            $gradeitem->submissionpublished = null;
-            $gradeitem->reviewedby = array();
-            $gradeitem->reviewerof = array();
-            $grades[$k] = $gradeitem;
-        }
-
-        //first get all the submissions
-        $submissions = $this->get_submissions_grouped();
+    	//first get all the submissions
+    	$submissions = $this->get_submissions_grouped();
 
         //if we're getting this for one student then we just get their stuff
-        if (!$canviewall) {
-            $group = $this->user_group($userid);
+    	if (!$canviewall) {
+    		$group = $this->user_group($userid);
             $usersub = null;
             foreach($submissions as $s) {
                 if ($s->group->id == $group->id) {
@@ -2965,83 +2986,83 @@ SQL;
                     break;
                 }
             }
-            $submissions = array($group->id => $usersub);
-
+    		$submissions = array($group->id => $usersub);
+            
             //we actually just wipe out the array
             $grades = array();
 
             if($usersub == null) {
-                $gradeitem = new stdClass;
-                $gradeitem->groupid = $k;
-                $gradeitem->name = $g->name;
-                $gradeitem->submissionid = null;
-                $gradeitem->submissiontitle = null;
-                $gradeitem->submissiongrade = null;
-                $gradeitem->submissiongradeover = null;
-                $gradeitem->submissiongradeoverby = null;
-                $gradeitem->submissionpublished = null;
-                $gradeitem->reviewedby = array();
-                $gradeitem->reviewerof = array();
-                $grades[$group->id] = $gradeitem;
+        		$gradeitem = new stdClass;
+        		$gradeitem->groupid = $k;
+        		$gradeitem->name = $g->name;
+        		$gradeitem->submissionid = null;
+        		$gradeitem->submissiontitle = null;
+        		$gradeitem->submissiongrade = null;
+        		$gradeitem->submissiongradeover = null;
+        		$gradeitem->submissiongradeoverby = null;
+        		$gradeitem->submissionpublished = null;
+        		$gradeitem->reviewedby = array();
+        		$gradeitem->reviewerof = array();
+        		$grades[$group->id] = $gradeitem;
             }
-        }
+    	}
 
-        //pack out $grades
-        foreach($submissions as $k => $v) {
+    	//pack out $grades
+    	foreach($submissions as $k => $v) {
             if (empty($v)) continue;
 
-            $gradeitem = isset($grades[$v->group->id]) ? $grades[$v->group->id] : new stdClass;
-            $gradeitem->groupid = $v->group->id;
-            $gradeitem->name = $v->group->name;
-            $gradeitem->submissiontitle = $v->title;
-            $gradeitem->submissiongrade = $this->real_grade($v->grade);
-            $gradeitem->submissionid = $v->id;
+    		$gradeitem = isset($grades[$v->group->id]) ? $grades[$v->group->id] : new stdClass;
+    		$gradeitem->groupid = $v->group->id;
+    		$gradeitem->name = $v->group->name;
+    		$gradeitem->submissiontitle = $v->title;
+    		$gradeitem->submissiongrade = $this->real_grade($v->grade);
+    		$gradeitem->submissionid = $v->id;
                 $gradeitem->submissionmodified = $v->timemodified;
-            $gradeitem->submissiongradeover = $this->real_grade($v->gradeover);
-            $gradeitem->submissiongradeoverby = $v->gradeoverby;
-            $gradeitem->submissionpublished = $v->published;
+    		$gradeitem->submissiongradeover = $this->real_grade($v->gradeover);
+    		$gradeitem->submissiongradeoverby = $v->gradeoverby;
+    		$gradeitem->submissionpublished = $v->published;
 
-            $grades[$v->group->id] = $gradeitem;
-        }
-
-
-
-        // do sorting and paging now
-        foreach($grades as $k => $v) {
-            $sortfield[$k] = $v->$sortby;
-        }
-        array_multisort($sortfield, $sorthow_const, $grades);
-
-        //ok now paging
-        $grades = array_slice($grades, $page * $perpage, $perpage);
-
-        //now put our indices back the way they were
-        foreach($grades as $k => $v) {
-            $grades2[$v->groupid] = $v;
-        }
-        $grades = $grades2;
+    		$grades[$v->group->id] = $gradeitem;
+    	}
 
 
 
-        //yep yep now we good let's get some reviewers
-        $findusers = array(); // we'll use this later to look up our userinfo
+    	// do sorting and paging now
+    	foreach($grades as $k => $v) {
+    		$sortfield[$k] = $v->$sortby;
+    	}
+    	array_multisort($sortfield, $sorthow_const, $grades);
+
+    	//ok now paging
+    	$grades = array_slice($grades, $page * $perpage, $perpage);
+
+    	//now put our indices back the way they were
+    	foreach($grades as $k => $v) {
+    		$grades2[$v->groupid] = $v;
+    	}
+    	$grades = $grades2;
+
+
+
+    	//yep yep now we good let's get some reviewers
+    	$findusers = array(); // we'll use this later to look up our userinfo
         $reviewer_submissions = array(); // we'll use this later to calculate outliers
-        foreach($grades as $k => $v) {
-            if(!empty($v->submissionid)) { //if this group has a submission
-                $vals = $DB->get_records("workshep_assessments", array("submissionid" => $v->submissionid), 'weight DESC', 'reviewerid AS userid, id AS assessmentid, submissionid, grade, gradinggrade, gradinggradeover, weight, submitterflagged');
+    	foreach($grades as $k => $v) {
+    		if(!empty($v->submissionid)) { //if this group has a submission
+    			$vals = $DB->get_records("workshep_assessments", array("submissionid" => $v->submissionid), 'weight DESC', 'reviewerid AS userid, id AS assessmentid, submissionid, grade, gradinggrade, gradinggradeover, weight, submitterflagged');
                 foreach($vals as $userid => $val) {
                     $val->grade = $this->real_grade($val->grade);
                     $val->gradinggrade = $this->real_grading_grade($val->gradinggrade);
                     $val->gradinggradeover = $this->real_grading_grade($val->gradinggradeover);
 
-                    $findusers[] = $val->userid;
+    				$findusers[] = $val->userid;
                     $reviewer_submissions[$v->submissionid][$val->assessmentid] = $val->grade;
-                }
-                $v->reviewedby = $vals;
-            } else {
-                $v->reviewedby = array();
-            }
-        }
+    			}
+    			$v->reviewedby = $vals;
+    		} else {
+    			$v->reviewedby = array();
+    		}
+    	}
 
 
 
@@ -3050,7 +3071,7 @@ SQL;
 
         //Highlight discrepancies
         $flags = array();
-
+        
         foreach ($reviewer_submissions as $submissionid => $s) {
             if (count($s) > 2) {
                 //Calculate the standard deviation of the assessment grades for this submission
@@ -3067,9 +3088,9 @@ SQL;
 
                 $s2 = $s; // Don't muck up our original array
 
-                sort($s2,SORT_NUMERIC);
-                $median = (count($s2) % 2) ?
-                 $s2[floor(count($s2)/2)] :
+                sort($s2,SORT_NUMERIC); 
+                $median = (count($s2) % 2) ? 
+                 $s2[floor(count($s2)/2)] : 
                  ($s2[floor(count($s2)/2)] + $s2[floor(count($s2)/2) - 1]) / 2;
 
                 //Now if there's any outside ±2 std dev flag them
@@ -3088,19 +3109,19 @@ SQL;
             }
         }
 
-        $userinfo = $DB->get_records_list("user","id",$findusers,'',user_picture::fields());
+    	$userinfo = $DB->get_records_list("user","id",$findusers,'',user_picture::fields());
 
-        if (!empty($findusers)) {
+        if (!empty($findusers)) {            
             list($select, $params) = $DB->get_in_or_equal($findusers, SQL_PARAMS_NAMED);
             $params['workshepid'] = $this->id;
-
+        
             $usergradinggrades = $DB->get_records_select("workshep_aggregations", "workshepid = :workshepid AND userid $select", $params, '', 'userid,gradinggrade');
         }
 
-        foreach($userinfo as $k => $v) {
-            if(!empty($usergradinggrades[$k]))
-                $v->gradinggrade = $this->real_grading_grade($usergradinggrades[$k]->gradinggrade);
-        }
+    	foreach($userinfo as $k => $v) {
+    		if(!empty($usergradinggrades[$k]))
+    			$v->gradinggrade = $this->real_grading_grade($usergradinggrades[$k]->gradinggrade);
+    	}
 
         $data = new stdclass();
         $data->grades = $grades;
@@ -3117,7 +3138,16 @@ SQL;
                 }
             }
         }
-
+        
+        $susers = array();
+        if (!empty($CFG->enablesuspendeduserdisplay)) {
+            $susers = get_suspended_userids($this->context);
+            foreach ($susers as $userid) {
+                if (isset($data->userinfo[$userid])) {
+                    $data->userinfo[$userid]->suspended = true;
+                }
+            }
+        }
         return $data;
     }
 
@@ -3787,31 +3817,41 @@ SQL;
                 $errors['title'] = get_string('err_multiplesubmissions', 'mod_workshep');
             }
         }
+        // Get the workshep record by id or cmid, depending on whether we're creating or editing a submission.
+        if (empty($data['workshepid'])) {
+            $workshep = $DB->get_record_select('workshep', 'id = (SELECT instance FROM {course_modules} WHERE id = ?)',
+                    [$data['cmid']]);
+        } else {
+            $workshep = $DB->get_record('workshep', ['id' => $data['workshepid']]);
+        }
 
-        if (isset($data['attachment_filemanager']) and isset($this->_customdata['workshep']->submissionfiletypes)) {
-            $whitelist = workshep::normalize_file_extensions($this->_customdata['workshep']->submissionfiletypes);
-            if ($whitelist) {
-                $draftfiles = file_get_drafarea_files($data['attachment_filemanager']);
-                if ($draftfiles) {
-                    $wrongfiles = array();
-                    foreach ($draftfiles->list as $file) {
-                        if (!workshep::is_allowed_file_type($file->filename, $whitelist)) {
-                            $wrongfiles[] = $file->filename;
-                        }
-                    }
-                    if ($wrongfiles) {
-                        $a = array(
-                            'whitelist' => workshep::clean_file_extensions($whitelist),
-                            'wrongfiles' => implode(', ', $wrongfiles),
-                        );
-                        $errors['attachment_filemanager'] = get_string('err_wrongfileextension', 'mod_workshep', $a);
-                    }
-                }
-                if (empty($draftfiles->list) and html_is_blank($data['content_editor']['text'])) {
-                    $errors['content_editor'] = get_string('submissionrequiredcontent', 'mod_workshep');
-                    $errors['attachment_filemanager'] = get_string('submissionrequiredfile', 'mod_workshep');
-                }
+        if (isset($data['attachment_filemanager'])) {
+            $getfiles = file_get_drafarea_files($data['attachment_filemanager']);
+            $attachments = $getfiles->list;
+        } else {
+            $attachments = array();
+        }
+
+        if ($workshep->submissiontypefile == WORKSHEP_SUBMISSION_TYPE_REQUIRED) {
+            if (empty($attachments)) {
+                $errors['attachment_filemanager'] = get_string('err_required', 'form');
             }
+        } else if ($workshep->submissiontypefile == WORKSHEP_SUBMISSION_TYPE_DISABLED && !empty($data['attachment_filemanager'])) {
+            $errors['attachment_filemanager'] = get_string('submissiontypedisabled', 'mod_workshep');
+        }
+
+        if ($workshep->submissiontypetext == WORKSHEP_SUBMISSION_TYPE_REQUIRED && html_is_blank($data['content_editor']['text'])) {
+            $errors['content_editor'] = get_string('err_required', 'form');
+        } else if ($workshep->submissiontypetext == WORKSHEP_SUBMISSION_TYPE_DISABLED && !empty($data['content_editor']['text'])) {
+            $errors['content_editor'] = get_string('submissiontypedisabled', 'mod_workshep');
+        }
+
+        // If neither type is explicitly required, one or the other must be submitted.
+        if ($workshep->submissiontypetext != WORKSHEP_SUBMISSION_TYPE_REQUIRED
+                && $workshep->submissiontypefile != WORKSHEP_SUBMISSION_TYPE_REQUIRED
+                && empty($attachments) && html_is_blank($data['content_editor']['text'])) {
+            $errors['content_editor'] = get_string('submissionrequiredcontent', 'mod_workshep');
+            $errors['attachment_filemanager'] = get_string('submissionrequiredfile', 'mod_workshep');
         }
 
         return $errors;
@@ -3876,8 +3916,10 @@ SQL;
         $params['objectid'] = $submission->id;
 
         // Save and relink embedded images and save attachments.
-        $submission = file_postupdate_standard_editor($submission, 'content', $this->submission_content_options(),
-            $this->context, 'mod_workshep', 'submission_content', $submission->id);
+        if ($this->submissiontypetext != WORKSHEP_SUBMISSION_TYPE_DISABLED) {
+            $submission = file_postupdate_standard_editor($submission, 'content', $this->submission_content_options(),
+                    $this->context, 'mod_workshep', 'submission_content', $submission->id);
+        }
 
         $submission = file_postupdate_standard_filemanager($submission, 'attachment', $this->submission_attachment_options(),
             $this->context, 'mod_workshep', 'submission_attachment', $submission->id);
@@ -4650,7 +4692,7 @@ class workshep_user_plan implements renderable {
             } elseif ($workshep->nosubmissionrequired) {
                 $task->title = get_string('nosubmissionrequired', 'workshep');
             } elseif ($workshep->teammode && $workshep->get_submission_by_author($userid,'s.id') !== false) {
-                $task->completed = true;
+              	$task->completed = true;
             } elseif ($workshep->phase >= workshep::PHASE_ASSESSMENT) {
                 $task->completed = false;
             } else {
@@ -4679,7 +4721,7 @@ class workshep_user_plan implements renderable {
             $task->title = get_string('allocate', 'workshep');
             $task->link = $workshep->allocation_url();
             $numofauthors = $workshep->count_potential_authors(false);
-
+            
             //these two counting methods need different code for teammode and normal mode
             if ($workshep->teammode) {
                 $submissions_grouped = $workshep->get_submissions_grouped();
@@ -4687,7 +4729,7 @@ class workshep_user_plan implements renderable {
             } else {
                 $numofsubmissions = $DB->count_records('workshep_submissions', array('workshepid'=>$workshep->id, 'example'=>0));
             }
-
+            
             //common sql to teammode and non-teammode count
             if ($workshep->teammode) {
                 if (count($submissions_grouped)) {
@@ -4768,7 +4810,7 @@ class workshep_user_plan implements renderable {
         //----------------------------------------------------------
         // setup | submission | * CALIBRATION | assessment | closed
         //----------------------------------------------------------
-
+        
         $phase = new stdclass();
         $phase->title = get_string('phasecalibration', 'workshep');
         $phase->tasks = array();
@@ -4784,27 +4826,27 @@ class workshep_user_plan implements renderable {
             $task->title = get_string('calculatecalibrationscores', 'workshep');
             $phase->tasks[] = $task;
 
-            $task = new stdclass();
-            $reviewers = $workshep->get_potential_reviewers();
-            $numexamples = (int)$workshep->numexamples ?: count($workshep->get_examples_for_manager());
-            $sql = <<<SQL
-SELECT a.reviewerid, count(a.reviewerid)
+			$task = new stdclass();
+			$reviewers = $workshep->get_potential_reviewers();
+			$numexamples = (int)$workshep->numexamples ?: count($workshep->get_examples_for_manager());
+			$sql = <<<SQL
+SELECT a.reviewerid, count(a)
 FROM {workshep_submissions} s
-    LEFT JOIN {workshep_assessments} a
-    ON a.submissionid = s.id
+	LEFT JOIN {workshep_assessments} a
+	ON a.submissionid = s.id
 WHERE s.workshepid = :workshepid
-    AND s.example = 1
-    AND a.weight = 0
-    AND a.grade IS NOT NULL
+	AND s.example = 1
+	AND a.weight = 0
+	AND a.grade IS NOT NULL
 GROUP BY a.reviewerid
-HAVING count(a.reviewerid) >= :numexamples
+HAVING count(a) >= :numexamples
 SQL;
 
-            $reviewcounts = $DB->get_records_sql($sql, array('workshepid' => $workshep->id, 'numexamples' => $numexamples));
+			$reviewcounts = $DB->get_records_sql($sql, array('workshepid' => $workshep->id, 'numexamples' => $numexamples));
 
-            $task->title = get_string('calibrationcompletion', 'workshep', array('num' => count($reviewcounts), 'den' => count($reviewers)));
-            $task->completed = 'info';
-            $phase->tasks[] = $task;
+			$task->title = get_string('calibrationcompletion', 'workshep', array('num' => count($reviewcounts), 'den' => count($reviewers)));
+			$task->completed = 'info';
+			$phase->tasks[] = $task;
         }
 
         $this->phases[workshep::PHASE_CALIBRATION] = $phase;
@@ -5419,8 +5461,8 @@ class workshep_assessment extends workshep_assessment_base implements renderable
     /** @var int */
     public $submissionid;
 
-    /** @var stdClass */
-    public $submission;
+	/** @var stdClass */
+	public $submission;
 
     /** @var int */
     public $weight;
@@ -5449,8 +5491,8 @@ class workshep_assessment extends workshep_assessment_base implements renderable
     /** @var int */
     public $feedbackauthorattachment;
 
-    /** @var bool Show flagged item resolution options */
-    public $resolution;
+	/** @var bool Show flagged item resolution options */
+	public $resolution;
 
     /** @var array */
     protected $fields = array('id', 'submissionid', 'weight', 'timecreated',
@@ -5923,6 +5965,7 @@ class workshep_random_examples_helper implements renderable {
      */
     public function __construct($examples,$n) {
 
+        $examples = workshep::only_examples_with_reference_assessments($examples);
         $slices = workshep::slice_example_submissions($examples,$n);
 
         $this->slices = array();
@@ -6083,51 +6126,51 @@ class workshep_calibration_report implements renderable {
 
         // Get user's example results
         if (empty($userexamples)) {
-            $this->examples = array();
+        	$this->examples = array();
         } else {
-            list($submissionids, $sparams) = $DB->get_in_or_equal(array_keys($exemplars), SQL_PARAMS_NAMED, 'sub');
-            list($reviewerids, $rparams) = $DB->get_in_or_equal(array_keys($userexamples), SQL_PARAMS_NAMED, 'usr');
+	        list($submissionids, $sparams) = $DB->get_in_or_equal(array_keys($exemplars), SQL_PARAMS_NAMED, 'sub');
+	        list($reviewerids, $rparams) = $DB->get_in_or_equal(array_keys($userexamples), SQL_PARAMS_NAMED, 'usr');
 
-            $params = array_merge($sparams, $rparams);
+	        $params = array_merge($sparams, $rparams);
 
-            $where = "submissionid $submissionids AND reviewerid $reviewerids AND weight = 0";
-            $rslt = $DB->get_records_select("workshep_assessments",$where,$params);
+	        $where = "submissionid $submissionids AND reviewerid $reviewerids AND weight = 0";
+	        $rslt = $DB->get_records_select("workshep_assessments",$where,$params);
 
-            foreach($rslt as $v) {
-                $ex = $userexamples[$v->reviewerid][$v->submissionid];
-                $ex->grade = $v->grade;
-                $ex->gradinggrade = $v->gradinggrade;
-                $ex->feedbackauthor = $v->feedbackauthor;
-            }
+	        foreach($rslt as $v) {
+	            $ex = $userexamples[$v->reviewerid][$v->submissionid];
+	            $ex->grade = $v->grade;
+	            $ex->gradinggrade = $v->gradinggrade;
+	            $ex->feedbackauthor = $v->feedbackauthor;
+	        }
 
 
-            // Finally get their calibration results
+	        // Finally get their calibration results
 
-            // We actually ask for these from the calibration plugin.
+	        // We actually ask for these from the calibration plugin.
 
-            $calibration = $workshep->calibration_instance();
+	        $calibration = $workshep->calibration_instance();
 
-            $scores = $calibration->get_calibration_scores();
+	        $scores = $calibration->get_calibration_scores();
 
-            $sortby = $options->sortby; $sorthow = $options->sorthow;
-            if (($sortby == 'lastname') || ($sortby == 'firstname')) {
-                uasort($reviewers, function ($a, $b) use ($sortby, $sorthow) {
-                    if ($sorthow == 'ASC')
-                        return strcmp($a->$sortby, $b->$sortby);
-                    else
-                        return strcmp($b->$sortby, $a->$sortby);
-                });
-            }
+	        $sortby = $options->sortby; $sorthow = $options->sorthow;
+	        if (($sortby == 'lastname') || ($sortby == 'firstname')) {
+	            uasort($reviewers, function ($a, $b) use ($sortby, $sorthow) {
+	                if ($sorthow == 'ASC')
+	                    return strcmp($a->$sortby, $b->$sortby);
+	                else
+	                    return strcmp($b->$sortby, $a->$sortby);
+	            });
+	        }
 
-            // We also get a moodle_url for each reviewer's grade breakdown
+	        // We also get a moodle_url for each reviewer's grade breakdown
 
-            foreach($reviewers as $r) {
-                $url = $calibration->user_calibration_url($r->id);
-                if (!empty($url)) {
-                    $r->calibrationlink = $url;
-                }
-            }
-        }
+	        foreach($reviewers as $r) {
+	            $url = $calibration->user_calibration_url($r->id);
+	            if (!empty($url)) {
+	                $r->calibrationlink = $url;
+	            }
+	        }
+		}
 
         $this->reviewers = $reviewers;
         $this->examples = $userexamples;

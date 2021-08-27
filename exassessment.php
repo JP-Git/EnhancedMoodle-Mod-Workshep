@@ -167,7 +167,8 @@ echo $output->render($workshep->prepare_example_submission(($example)));
 if (trim($workshep->instructreviewers)) {
     $instructions = file_rewrite_pluginfile_urls($workshep->instructreviewers, 'pluginfile.php', $PAGE->context->id,
         'mod_workshep', 'instructreviewers', null, workshep::instruction_editors_options($PAGE->context));
-    print_collapsible_region_start('', 'workshep-viewlet-instructreviewers', get_string('instructreviewers', 'workshep'));
+    print_collapsible_region_start('', 'workshep-viewlet-instructreviewers', get_string('instructreviewers', 'workshep'),
+            'workshep-viewlet-instructreviewers-collapsed');
     echo $output->box(format_text($instructions, $workshep->instructreviewersformat, array('overflowdiv'=>true)), array('generalbox', 'instructions'));
     print_collapsible_region_end();
 }

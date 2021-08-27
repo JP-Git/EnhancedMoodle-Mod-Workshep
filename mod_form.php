@@ -55,10 +55,10 @@ class mod_workshep_mod_form extends moodleform_mod {
      */
     public function definition() {
         global $CFG, $DB, $PAGE;
-        
-        $PAGE->requires->jquery();
-        $PAGE->requires->js('/mod/workshep/mod_form.js');
-        $PAGE->requires->js_init_call('M.mod_workshep.mod_form.init');
+		
+		$PAGE->requires->jquery();
+		$PAGE->requires->js('/mod/workshep/mod_form.js');
+		$PAGE->requires->js_init_call('M.mod_workshep.mod_form.init');
 
         $workshepconfig = get_config('workshep');
         $mform = $this->_form;
@@ -133,30 +133,46 @@ class mod_workshep_mod_form extends moodleform_mod {
         $mform->addElement('editor', 'instructauthorseditor', $label, null,
                             workshep::instruction_editors_options($this->context));
 
+        $typeelements = [];
+        foreach (['submissiontypetext', 'submissiontypefile'] as $type) {
+            $available = $type . 'available';
+            $required = $type . 'required';
+            $availablelabel = get_string($available, 'workshep');
+            $requiredlabel = get_string($required, 'workshep');
+            $typeelements[] = $mform->createElement('advcheckbox', $available, '', $availablelabel);
+            $typeelements[] = $mform->createElement('advcheckbox', $required, '', $requiredlabel);
+            $mform->setDefault($available, 1);
+        }
+        // We can't use <br> as the separator as it does not work well in this case with the Boost theme.
+        // Instead, separate both tuples with a full-width empty div.
+        $mform->addGroup($typeelements, 'submissiontypes', get_string('submissiontypes', 'workshep'),
+            array(' ', '<div style="width:100%"></div>'), false);
+
         $options = array();
-        for ($i = 7; $i >= 0; $i--) {
+        for ($i = 7; $i >= 1; $i--) {
             $options[$i] = $i;
         }
         $label = get_string('nattachments', 'workshep');
         $mform->addElement('select', 'nattachments', $label, $options);
         $mform->setDefault('nattachments', 1);
+        $mform->hideIf('nattachments', 'submissiontypefileavailable');
 
         $label = get_string('allowedfiletypesforsubmission', 'workshep');
         $mform->addElement('filetypes', 'submissionfiletypes', $label);
         $mform->addHelpButton('submissionfiletypes', 'allowedfiletypesforsubmission', 'workshep');
-        $mform->disabledIf('submissionfiletypes', 'nattachments', 'eq', 0);
+        $mform->hideIf('submissionfiletypes', 'submissiontypefileavailable');
 
         $options = get_max_upload_sizes($CFG->maxbytes, $this->course->maxbytes, 0, $workshepconfig->maxbytes);
         $mform->addElement('select', 'maxbytes', get_string('maxbytes', 'workshep'), $options);
         $mform->setDefault('maxbytes', $workshepconfig->maxbytes);
-        $mform->disabledIf('maxbytes', 'nattachments', 'eq', 0);
+        $mform->hideIf('maxbytes', 'submissiontypefileavailable');
 
         $label = get_string('latesubmissions', 'workshep');
         $text = get_string('latesubmissions_desc', 'workshep');
         $mform->addElement('checkbox', 'latesubmissions', $label, $text);
         $mform->addHelpButton('latesubmissions', 'latesubmissions', 'workshep');
-        
-        $numgroups = $DB->count_records('groups',array('courseid' => $this->course->id));
+		
+  		$numgroups = $DB->count_records('groups',array('courseid' => $this->course->id));
         $disabled = (bool)($numgroups == 0);
         
         $label = get_string('teammode', 'workshep');
@@ -202,18 +218,18 @@ class mod_workshep_mod_form extends moodleform_mod {
         }
         $mform->addElement('select', 'overallfeedbackfiles', get_string('overallfeedbackfiles', 'workshep'), $options);
         $mform->setDefault('overallfeedbackfiles', 0);
-        $mform->disabledIf('overallfeedbackfiles', 'overallfeedbackmode', 'eq', 0);
+        $mform->hideIf('overallfeedbackfiles', 'overallfeedbackmode', 'eq', 0);
 
         $label = get_string('allowedfiletypesforoverallfeedback', 'workshep');
         $mform->addElement('filetypes', 'overallfeedbackfiletypes', $label);
         $mform->addHelpButton('overallfeedbackfiletypes', 'allowedfiletypesforoverallfeedback', 'workshep');
-        $mform->disabledIf('overallfeedbackfiletypes', 'overallfeedbackfiles', 'eq', 0);
+        $mform->hideIf('overallfeedbackfiletypes', 'overallfeedbackfiles', 'eq', 0);
 
         $options = get_max_upload_sizes($CFG->maxbytes, $this->course->maxbytes);
         $mform->addElement('select', 'overallfeedbackmaxbytes', get_string('overallfeedbackmaxbytes', 'workshep'), $options);
         $mform->setDefault('overallfeedbackmaxbytes', $workshepconfig->maxbytes);
-        $mform->disabledIf('overallfeedbackmaxbytes', 'overallfeedbackmode', 'eq', 0);
-        $mform->disabledIf('overallfeedbackmaxbytes', 'overallfeedbackfiles', 'eq', 0);
+        $mform->hideIf('overallfeedbackmaxbytes', 'overallfeedbackmode', 'eq', 0);
+        $mform->hideIf('overallfeedbackmaxbytes', 'overallfeedbackfiles', 'eq', 0);
 
         $label = get_string('conclusion', 'workshep');
         $mform->addElement('editor', 'conclusioneditor', $label, null,
@@ -232,8 +248,8 @@ class mod_workshep_mod_form extends moodleform_mod {
         $options = workshep::available_example_modes_list();
         $mform->addElement('select', 'examplesmode', $label, $options);
         $mform->setDefault('examplesmode', $workshepconfig->examplesmode);
-        $mform->disabledIf('examplesmode', 'useexamples');
-        $mform->disabledIf('examplesmode', 'usecalibration', 'checked');
+        $mform->hideIf('examplesmode', 'useexamples');
+		$mform->disabledIf('examplesmode', 'usecalibration', 'checked');
 
         $label = get_string('numexamples', 'workshep');
         $mform->addElement('select', 'numexamples', $label, array('All',1,2,3,4,5,6,7,8,9,10,11,12,13,14,15));
@@ -307,7 +323,7 @@ class mod_workshep_mod_form extends moodleform_mod {
 
         $label = get_string('submissionendswitch', 'mod_workshep');
         $mform->addElement('checkbox', 'phaseswitchassessment', $label);
-        $mform->disabledIf('phaseswitchassessment', 'submissionend[enabled]');
+        $mform->hideIf('phaseswitchassessment', 'submissionend[enabled]');
         $mform->addHelpButton('phaseswitchassessment', 'submissionendswitch', 'mod_workshep');
 
         $label = get_string('assessmentstart', 'workshep');
@@ -317,6 +333,7 @@ class mod_workshep_mod_form extends moodleform_mod {
         $mform->addElement('date_time_selector', 'assessmentend', $label, array('optional' => true));
 
         $coursecontext = context_course::instance($this->course->id);
+        // To be removed (deprecated) with MDL-67526.
         plagiarism_get_form_elements_module($mform, $coursecontext, 'mod_workshep');
 
         // Common module settings, Restrict availability, Activity completion etc. ----
@@ -327,6 +344,8 @@ class mod_workshep_mod_form extends moodleform_mod {
 
         // Standard buttons, common to all modules ------------------------------------
         $this->add_action_buttons();
+
+        $PAGE->requires->js_call_amd('mod_workshep/modform', 'init');
     }
 
     /**
@@ -364,6 +383,16 @@ class mod_workshep_mod_form extends moodleform_mod {
                                 $data['conclusion']);
             $data['conclusioneditor']['format'] = $data['conclusionformat'];
             $data['conclusioneditor']['itemid'] = $draftitemid;
+            // Set submission type checkboxes.
+            foreach (['submissiontypetext', 'submissiontypefile'] as $type) {
+                $data[$type . 'available'] = 1;
+                $data[$type . 'required'] = 0;
+                if ($data[$type] == WORKSHEP_SUBMISSION_TYPE_DISABLED) {
+                    $data[$type . 'available'] = 0;
+                } else if ($data[$type] == WORKSHEP_SUBMISSION_TYPE_REQUIRED) {
+                    $data[$type . 'required'] = 1;
+                }
+            }
         } else {
             // adding a new workshep instance
             $draftitemid = file_get_submitted_draft_itemid('instructauthors');
@@ -377,6 +406,30 @@ class mod_workshep_mod_form extends moodleform_mod {
             $draftitemid = file_get_submitted_draft_itemid('conclusion');
             file_prepare_draft_area($draftitemid, null, 'mod_workshep', 'conclusion', 0);    // no context yet, itemid not used
             $data['conclusioneditor'] = array('text' => '', 'format' => editors_get_preferred_format(), 'itemid' => $draftitemid);
+        }
+    }
+
+    /**
+     * Combine submission type checkboxes into integer values for the database.
+     *
+     * @param stdClass $data The submitted form data.
+     */
+    public function data_postprocessing($data) {
+        parent::data_postprocessing($data);
+
+        foreach (['text', 'file'] as $type) {
+            $field = 'submissiontype' . $type;
+            $available = $field . 'available';
+            $required = $field . 'required';
+            if ($data->$required) {
+                $data->$field = WORKSHEP_SUBMISSION_TYPE_REQUIRED;
+            } else if ($data->$available) {
+                $data->$field = WORKSHEP_SUBMISSION_TYPE_AVAILABLE;
+            } else {
+                $data->$field = WORKSHEP_SUBMISSION_TYPE_DISABLED;
+            }
+            unset($data->$available);
+            unset($data->$required);
         }
     }
 
@@ -402,8 +455,7 @@ class mod_workshep_mod_form extends moodleform_mod {
                     // gradecategory and gradinggradecategory - grrr QuickForms
                     $decimalpoints = $gradeitem->get_decimals();
                     if ($gradeitem->itemnumber == 0) {
-                        $submissiongradepass = $mform->getElement('submissiongradepass');
-                        $submissiongradepass->setValue(format_float($gradeitem->gradepass, $decimalpoints));
+                        $mform->setDefault('submissiongradepass', format_float($gradeitem->gradepass, $decimalpoints));
                         $group = $mform->getElement('submissiongradegroup');
                         $elements = $group->getElements();
                         foreach ($elements as $element) {
@@ -412,8 +464,7 @@ class mod_workshep_mod_form extends moodleform_mod {
                             }
                         }
                     } else if ($gradeitem->itemnumber == 1) {
-                        $gradinggradepass = $mform->getElement('gradinggradepass');
-                        $gradinggradepass->setValue(format_float($gradeitem->gradepass, $decimalpoints));
+                        $mform->setDefault('gradinggradepass', format_float($gradeitem->gradepass, $decimalpoints));
                         $group = $mform->getElement('gradinggradegroup');
                         $elements = $group->getElements();
                         foreach ($elements as $element) {
@@ -423,6 +474,13 @@ class mod_workshep_mod_form extends moodleform_mod {
                         }
                     }
                 }
+            }
+        }
+        $typevalues = $mform->getElementValue('submissiontypes');
+        foreach (['submissiontypetext', 'submissiontypefile'] as $type) {
+            // Don't leave a disabled "required" checkbox checked.
+            if (!$typevalues[$type . 'available']) {
+                $mform->setDefault($type . 'required', 0);
             }
         }
 
@@ -486,6 +544,11 @@ class mod_workshep_mod_form extends moodleform_mod {
                     $errors['gradinggradepass'] = get_string('gradepassgreaterthangrade', 'grades', $data['gradinggrade']);
                 }
             }
+        }
+
+        if (!$data['submissiontypetextavailable'] && !$data['submissiontypefileavailable']) {
+            // One submission type must be available.
+            $errors['submissiontypes'] = get_string('nosubmissiontype', 'workshep');
         }
 
         return $errors;

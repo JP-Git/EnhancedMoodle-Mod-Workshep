@@ -112,24 +112,26 @@ $nosubmissionrequired = $workshep->nosubmissionrequired;
 switch ($workshep->phase) {
 case workshep::PHASE_SETUP:
     if ($workshep->teammode) {
-        $nogroupusers = $workshep->get_ungrouped_users();
-        if (!empty($nogroupusers)) {
-            $list = array();
-            foreach ($nogroupusers as $nogroupuser) {
-                $list[] = fullname($nogroupuser);
-            }
-            $a = implode(', ', $list);
-            echo $output->box(get_string('teammode_ungroupedwarning', 'workshep', $a), 'generalbox warning nogroupusers');
-        }
+    	$nogroupusers = $workshep->get_ungrouped_users();
+    	if (!empty($nogroupusers)) {
+    	    $list = array();
+    	    foreach ($nogroupusers as $nogroupuser) {
+    	        $list[] = fullname($nogroupuser);
+    	    }
+    	    $a = implode(', ', $list);
+    	    echo $output->box(get_string('teammode_ungroupedwarning', 'workshep', $a), 'generalbox warning nogroupusers');
+    	}
     }
     
     if (trim($workshep->intro)) {
-        print_collapsible_region_start('', 'workshep-viewlet-intro', get_string('introduction', 'workshep'));
+        print_collapsible_region_start('', 'workshep-viewlet-intro', get_string('introduction', 'workshep'),
+                'workshep-viewlet-intro-collapsed');
         echo $output->box(format_module_intro('workshep', $workshep, $workshep->cm->id), 'generalbox');
         print_collapsible_region_end();
     }
     if ($workshep->useexamples and has_capability('mod/workshep:manageexamples', $PAGE->context)) {
-        print_collapsible_region_start('', 'workshep-viewlet-allexamples', get_string('examplesubmissions', 'workshep'));
+        print_collapsible_region_start('', 'workshep-viewlet-allexamples', get_string('examplesubmissions', 'workshep'),
+                'workshep-viewlet-allexamples-collapsed');
         echo $output->box_start('generalbox examples');
         if ($workshep->grading_strategy_instance()->form_ready()) {
             $orderby = $workshep->numexamples > 1 ? 'a.grade, s.title, s.id' : 's.title';
@@ -158,7 +160,8 @@ case workshep::PHASE_SUBMISSION:
     if (trim($workshep->instructauthors)) {
         $instructions = file_rewrite_pluginfile_urls($workshep->instructauthors, 'pluginfile.php', $PAGE->context->id,
             'mod_workshep', 'instructauthors', null, workshep::instruction_editors_options($PAGE->context));
-        print_collapsible_region_start('', 'workshep-viewlet-instructauthors', get_string('instructauthors', 'workshep'));
+        print_collapsible_region_start('', 'workshep-viewlet-instructauthors', get_string('instructauthors', 'workshep'),
+                'workshep-viewlet-instructauthors-collapsed');
         echo $output->box(format_text($instructions, $workshep->instructauthorsformat, array('overflowdiv'=>true)), array('generalbox', 'instructions'));
         print_collapsible_region_end();
     }
@@ -188,7 +191,8 @@ case workshep::PHASE_SUBMISSION:
         } else {
             $examplesdone = true;
         }
-        print_collapsible_region_start('', 'workshep-viewlet-examples', get_string('exampleassessments', 'workshep'), false, $examplesdone);
+        print_collapsible_region_start('', 'workshep-viewlet-examples', get_string('exampleassessments', 'workshep'),
+                'workshep-viewlet-examples-collapsed', $examplesdone);
         echo $output->box_start('generalbox exampleassessments');
         if ($total == 0) {
             echo $output->heading(get_string('noexamples', 'workshep'), 3);
@@ -214,13 +218,14 @@ case workshep::PHASE_SUBMISSION:
             print_collapsible_region_end();
         }
         
-        print_collapsible_region_start('', 'workshep-viewlet-ownsubmission', get_string('yoursubmission', 'workshep'));
+        print_collapsible_region_start('', 'workshep-viewlet-ownsubmission', get_string('yoursubmission', 'workshep'),
+                'workshep-viewlet-ownsubmission-collapsed');
         echo $output->box_start('generalbox ownsubmission');
 
         if ($nosubmissionrequired) {
             echo $output->box(get_string('nosubmissionrequired', 'workshep'), 'generalbox warning nogroupusers');
         } else if ($workshep->teammode && is_null($workshep->user_group($USER->id))) {
-            echo $output->box(get_string('teammode_notingroupwarning', 'workshep'), 'generalbox warning nogroupusers');
+        	echo $output->box(get_string('teammode_notingroupwarning', 'workshep'), 'generalbox warning nogroupusers');
         } else {
             if ($submission = $workshep->get_submission_by_author($USER->id)) {
                 echo $output->render($workshep->prepare_submission_summary($submission, true));
@@ -268,7 +273,9 @@ case workshep::PHASE_SUBMISSION:
             $workshep->submitonbehalfofothers();
         }
 
-        print_collapsible_region_start('', 'workshep-viewlet-allsubmissions', get_string('submissionsreport', 'workshep'));
+        print_collapsible_region_start('', 'workshep-viewlet-allsubmissions', get_string('submissionsreport', 'workshep'),
+                'workshep-viewlet-allsubmissions-collapsed');
+
         $perpage = get_user_preferences('workshep_perpage', 10);
         $data = $workshep->prepare_grading_report_data($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
 
@@ -423,12 +430,14 @@ case workshep::PHASE_ASSESSMENT:
         }
         
         if ($ownsubmission = $workshep->get_submission_by_author($USER->id)) {
-            print_collapsible_region_start('', 'workshep-viewlet-ownsubmission', get_string('yoursubmission', 'workshep'), false, true);
+            print_collapsible_region_start('', 'workshep-viewlet-ownsubmission', get_string('yoursubmission', 'workshep'),
+                    'workshep-viewlet-ownsubmission-collapsed', true);
             echo $output->box_start('generalbox ownsubmission');
             echo $output->render($workshep->prepare_submission_summary($ownsubmission, true));
             $ownsubmissionexists = true;
         } else {
-            print_collapsible_region_start('', 'workshep-viewlet-ownsubmission', get_string('yoursubmission', 'workshep'));
+            print_collapsible_region_start('', 'workshep-viewlet-ownsubmission', get_string('yoursubmission', 'workshep'),
+                    'workshep-viewlet-ownsubmission-collapsed');
             echo $output->box_start('generalbox ownsubmission');
             echo $output->container(get_string('noyoursubmission', 'workshep'));
             $ownsubmissionexists = false;
@@ -450,11 +459,11 @@ case workshep::PHASE_ASSESSMENT:
 
         $perpage = get_user_preferences('workshep_perpage', 10);
         $groupid = groups_get_activity_group($workshep->cm, true);
-        if ($workshep->teammode) {
-            $data = $workshep->prepare_grading_report_data_grouped($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
-        } else {
-            $data = $workshep->prepare_grading_report_data($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
-        }
+		if ($workshep->teammode) {
+			$data = $workshep->prepare_grading_report_data_grouped($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
+		} else {
+	        $data = $workshep->prepare_grading_report_data($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
+		}
         if ($data) {
             $showauthornames    = has_capability('mod/workshep:viewauthornames', $workshep->context);
             $showreviewernames  = has_capability('mod/workshep:viewreviewernames', $workshep->context);
@@ -473,12 +482,13 @@ case workshep::PHASE_ASSESSMENT:
             $reportopts->showgradinggrade       = false;
             $reportopts->workshepphase          = $workshep->phase;
 
-            print_collapsible_region_start('', 'workshep-viewlet-gradereport', get_string('gradesreport', 'workshep'));
+            print_collapsible_region_start('', 'workshep-viewlet-gradereport', get_string('gradesreport', 'workshep'),
+                    'workshep-viewlet-gradereport-collapsed');
             echo $output->box_start('generalbox gradesreport');
             echo $output->container(groups_print_activity_menu($workshep->cm, $PAGE->url, true), 'groupwidget');
             echo $output->render($pagingbar);
             if($workshep->teammode) {
-                echo $output->render(new workshep_grouped_grading_report($data, $reportopts));
+            	echo $output->render(new workshep_grouped_grading_report($data, $reportopts));
             } else {
                 echo $output->render(new workshep_grading_report($data, $reportopts));
             }
@@ -504,7 +514,8 @@ case workshep::PHASE_ASSESSMENT:
     if (trim($workshep->instructreviewers)) {
         $instructions = file_rewrite_pluginfile_urls($workshep->instructreviewers, 'pluginfile.php', $PAGE->context->id,
             'mod_workshep', 'instructreviewers', null, workshep::instruction_editors_options($PAGE->context));
-        print_collapsible_region_start('', 'workshep-viewlet-instructreviewers', get_string('instructreviewers', 'workshep'));
+        print_collapsible_region_start('', 'workshep-viewlet-instructreviewers', get_string('instructreviewers', 'workshep'),
+                'workshep-viewlet-instructreviewers-collapsed');
         echo $output->box(format_text($instructions, $workshep->instructreviewersformat, array('overflowdiv'=>true)), array('generalbox', 'instructions'));
         print_collapsible_region_end();
     }
@@ -519,7 +530,8 @@ case workshep::PHASE_ASSESSMENT:
     $examplesavailable = true;
 
     if (!$examplesdone and $examplesmust and ($ownsubmissionexists === false) and !$workshep->nosubmissionrequired) {
-        print_collapsible_region_start('', 'workshep-viewlet-examplesfail', get_string('exampleassessments', 'workshep'));
+        print_collapsible_region_start('', 'workshep-viewlet-examplesfail', get_string('exampleassessments', 'workshep'),
+                'workshep-viewlet-examplesfail-collapsed');
         echo $output->box(get_string('exampleneedsubmission', 'workshep'));
         print_collapsible_region_end();
         $examplesavailable = false;
@@ -546,7 +558,8 @@ case workshep::PHASE_ASSESSMENT:
         } else {
             $examplesdone = true;
         }
-        print_collapsible_region_start('', 'workshep-viewlet-examples', get_string('exampleassessments', 'workshep'), false, $examplesdone);
+        print_collapsible_region_start('', 'workshep-viewlet-examples', get_string('exampleassessments', 'workshep'),
+                'workshep-viewlet-examples-collapsed', $examplesdone);
         echo $output->box_start('generalbox exampleassessments');
         if ($total == 0) {
             echo $output->heading(get_string('noexamples', 'workshep'), 3);
@@ -560,7 +573,8 @@ case workshep::PHASE_ASSESSMENT:
         print_collapsible_region_end();
     }
     if (!$examplesmust or $examplesdone) {
-        print_collapsible_region_start('', 'workshep-viewlet-assignedassessments', get_string('assignedassessments', 'workshep'));
+        print_collapsible_region_start('', 'workshep-viewlet-assignedassessments', get_string('assignedassessments', 'workshep'),
+                'workshep-viewlet-assignedassessments-collapsed');
         if (! $assessments = $workshep->get_assessments_by_reviewer($USER->id)) {
             echo $output->box_start('generalbox assessment-none');
             echo $output->notification(get_string('assignedassessmentsnone', 'workshep'));
@@ -612,9 +626,9 @@ case workshep::PHASE_EVALUATION:
         $perpage = get_user_preferences('workshep_perpage', 10);
         $groupid = groups_get_activity_group($workshep->cm, true);
         if ($workshep->teammode) {
-            $data = $workshep->prepare_grading_report_data_grouped($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
+        	$data = $workshep->prepare_grading_report_data_grouped($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
         } else {
-            $data = $workshep->prepare_grading_report_data($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
+         	$data = $workshep->prepare_grading_report_data($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
         }
         if ($data) {
             $showauthornames    = has_capability('mod/workshep:viewauthornames', $workshep->context);
@@ -638,10 +652,10 @@ case workshep::PHASE_EVALUATION:
                 $form = $evaluator->get_settings_form(new moodle_url($workshep->aggregate_url(),
                         compact('sortby', 'sorthow', 'page')));
                 $form->display();
-                
-                if ($evaluator->has_messages()) {
-                    $evaluator->display_messages();
-                }
+				
+	            if ($evaluator->has_messages()) {
+	                $evaluator->display_messages();
+	            }
             }
 
             // prepare paging bar
@@ -659,12 +673,13 @@ case workshep::PHASE_EVALUATION:
             $reportopts->showdiscrepancy        = true;
             $reportopts->workshepphase          = $workshep->phase;
 
-            print_collapsible_region_start('', 'workshep-viewlet-gradereport', get_string('gradesreport', 'workshep'));
+            print_collapsible_region_start('', 'workshep-viewlet-gradereport', get_string('gradesreport', 'workshep'),
+                    'workshep-viewlet-gradereport-collapsed');
             echo $output->box_start('generalbox gradesreport');
             echo $output->container(groups_print_activity_menu($workshep->cm, $PAGE->url, true), 'groupwidget');
             echo $output->render($pagingbar);
             if($workshep->teammode) {
-                echo $output->render(new workshep_grouped_grading_report($data, $reportopts));
+            	echo $output->render(new workshep_grouped_grading_report($data, $reportopts));
             } else {
                 echo $output->render(new workshep_grading_report($data, $reportopts));
             }
@@ -678,7 +693,8 @@ case workshep::PHASE_EVALUATION:
         }
     }
     if (has_capability('mod/workshep:overridegrades', $workshep->context)) {
-        print_collapsible_region_start('', 'workshep-viewlet-cleargrades', get_string('toolbox', 'workshep'), false, true);
+        print_collapsible_region_start('', 'workshep-viewlet-cleargrades', get_string('toolbox', 'workshep'),
+                'workshep-viewlet-cleargrades-collapsed', true);
         echo $output->box_start('generalbox toolbox');
 
         // Clear aggregated grades
@@ -715,7 +731,8 @@ case workshep::PHASE_EVALUATION:
             print_collapsible_region_end();
         }
         
-        print_collapsible_region_start('', 'workshep-viewlet-ownsubmission', get_string('yoursubmission', 'workshep'));
+        print_collapsible_region_start('', 'workshep-viewlet-ownsubmission', get_string('yoursubmission', 'workshep'),
+                'workshep-viewlet-ownsubmission-collapsed');
         echo $output->box_start('generalbox ownsubmission');
         if ($submission = $workshep->get_submission_by_author($USER->id)) {
             echo $output->render($workshep->prepare_submission_summary($submission, true));
@@ -726,7 +743,8 @@ case workshep::PHASE_EVALUATION:
         print_collapsible_region_end();
     }
     if ($assessments = $workshep->get_assessments_by_reviewer($USER->id)) {
-        print_collapsible_region_start('', 'workshep-viewlet-assignedassessments', get_string('assignedassessments', 'workshep'));
+        print_collapsible_region_start('', 'workshep-viewlet-assignedassessments', get_string('assignedassessments', 'workshep'),
+                'workshep-viewlet-assignedassessments-collapsed');
         $shownames = has_capability('mod/workshep:viewauthornames', $PAGE->context);
         foreach ($assessments as $assessment) {
             $submission                     = new stdclass();
@@ -760,7 +778,8 @@ case workshep::PHASE_CLOSED:
     if (trim($workshep->conclusion)) {
         $conclusion = file_rewrite_pluginfile_urls($workshep->conclusion, 'pluginfile.php', $workshep->context->id,
             'mod_workshep', 'conclusion', null, workshep::instruction_editors_options($workshep->context));
-        print_collapsible_region_start('', 'workshep-viewlet-conclusion', get_string('conclusion', 'workshep'));
+        print_collapsible_region_start('', 'workshep-viewlet-conclusion', get_string('conclusion', 'workshep'),
+                'workshep-viewlet-conclusion-collapsed');
         echo $output->box(format_text($conclusion, $workshep->conclusionformat, array('overflowdiv'=>true)), array('generalbox', 'conclusion'));
         print_collapsible_region_end();
     }
@@ -769,9 +788,9 @@ case workshep::PHASE_CLOSED:
     
     $groupid = groups_get_activity_group($workshep->cm, true);
     if ($workshep->teammode) {
-        $data = $workshep->prepare_grading_report_data_grouped($USER->id, $groupid, 0, 1, $sortby, $sorthow);
+    	$data = $workshep->prepare_grading_report_data_grouped($USER->id, $groupid, 0, 1, $sortby, $sorthow);
     } else {
-        $data = $workshep->prepare_grading_report_data($USER->id, $groupid, 0, 1, $sortby, $sorthow);
+     	$data = $workshep->prepare_grading_report_data($USER->id, $groupid, 0, 1, $sortby, $sorthow);
     }
     $showauthornames    = has_capability('mod/workshep:viewauthornames', $workshep->context);
     $showreviewernames  = has_capability('mod/workshep:viewreviewernames', $workshep->context);
@@ -785,7 +804,8 @@ case workshep::PHASE_CLOSED:
     $reportopts->showgradinggrade       = true;    
     
     if (!empty($finalgrades)) {
-        print_collapsible_region_start('', 'workshep-viewlet-yourgrades', get_string('yourgrades', 'workshep'));
+        print_collapsible_region_start('', 'workshep-viewlet-yourgrades', get_string('yourgrades', 'workshep'),
+                'workshep-viewlet-yourgrades-collapsed');
         echo $output->box_start('generalbox grades-yourgrades');
         echo $output->render($finalgrades);
         if ($workshep->teammode) {
@@ -797,31 +817,31 @@ case workshep::PHASE_CLOSED:
         print_collapsible_region_end();
     }
     if (has_capability('mod/workshep:viewallassessments', $PAGE->context)) {
+		
+		print_collapsible_region_start('', 'workshep-viewlet-flagging', get_string('submitterflagging', 'workshep'));
+		echo $output->box_start('generalbox center');
         
-        print_collapsible_region_start('', 'workshep-viewlet-flagging', get_string('submitterflagging', 'workshep'));
-        echo $output->box_start('generalbox center');
-        
-        echo html_writer::checkbox('flaggingon', '1', $workshep->submitterflagging, get_string('flaggingon', 'workshep'), array('onchange' => "set_flagging_on(this, {$cm->id});"));
-        
-        $url = new moodle_url('flagged_assessments.php', array('id' => $cm->id));
+		echo html_writer::checkbox('flaggingon', '1', $workshep->submitterflagging, get_string('flaggingon', 'workshep'), array('onchange' => "set_flagging_on(this, {$cm->id});"));
+		
+		$url = new moodle_url('flagged_assessments.php', array('id' => $cm->id));
         echo $output->single_button($url, get_string('showflaggedassessments', 'workshep', 1), 'get');
 
-        echo $output->box_end();
-        print_collapsible_region_end();
-        
+		echo $output->box_end();
+		print_collapsible_region_end();
+		
         $evaluator = $workshep->grading_evaluation_instance();
-        
+		
         if ($evaluator->has_messages()) {
             $evaluator->display_messages();
         }
-        
+		
         $perpage = get_user_preferences('workshep_perpage', 10);
         $groupid = groups_get_activity_group($workshep->cm, true);
         $groupmode = groups_get_activity_groupmode($workshep->cm);
         if ($workshep->teammode) {
-            $data = $workshep->prepare_grading_report_data_grouped($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
+        	$data = $workshep->prepare_grading_report_data_grouped($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
         } else {
-            $data = $workshep->prepare_grading_report_data($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
+         	$data = $workshep->prepare_grading_report_data($USER->id, $groupid, $page, $perpage, $sortby, $sorthow);
         }
         if ($data) {
             $showauthornames    = has_capability('mod/workshep:viewauthornames', $workshep->context);
@@ -841,12 +861,13 @@ case workshep::PHASE_CLOSED:
             $reportopts->showgradinggrade       = true;
             $reportopts->workshepphase          = $workshep->phase;
 
-            print_collapsible_region_start('', 'workshep-viewlet-gradereport', get_string('gradesreport', 'workshep'));
+            print_collapsible_region_start('', 'workshep-viewlet-gradereport', get_string('gradesreport', 'workshep'),
+                    'workshep-viewlet-gradereport-collapsed');
             echo $output->box_start('generalbox gradesreport');
             echo $output->container(groups_print_activity_menu($workshep->cm, $PAGE->url, true), 'groupwidget');
             echo $output->render($pagingbar);
             if($workshep->teammode) {
-                echo $output->render(new workshep_grouped_grading_report($data, $reportopts));
+            	echo $output->render(new workshep_grouped_grading_report($data, $reportopts));
             } else {
                 echo $output->render(new workshep_grading_report($data, $reportopts));
             }
@@ -873,7 +894,8 @@ case workshep::PHASE_CLOSED:
             print_collapsible_region_end();
         }
         
-        print_collapsible_region_start('', 'workshep-viewlet-ownsubmission', get_string('yoursubmission', 'workshep'));
+        print_collapsible_region_start('', 'workshep-viewlet-ownsubmission', get_string('yoursubmission', 'workshep'),
+                'workshep-viewlet-ownsubmission-collapsed');
         echo $output->box_start('generalbox ownsubmission');
         if ($submission = $workshep->get_submission_by_author($USER->id)) {
             echo $output->render($workshep->prepare_submission_summary($submission, true));
@@ -894,7 +916,8 @@ case workshep::PHASE_CLOSED:
     if (has_capability('mod/workshep:viewpublishedsubmissions', $workshep->context)) {
         $shownames = has_capability('mod/workshep:viewauthorpublished', $workshep->context);
         if ($submissions = $workshep->get_published_submissions()) {
-            print_collapsible_region_start('', 'workshep-viewlet-publicsubmissions', get_string('publishedsubmissions', 'workshep'));
+            print_collapsible_region_start('', 'workshep-viewlet-publicsubmissions', get_string('publishedsubmissions', 'workshep'),
+                    'workshep-viewlet-publicsubmissions-collapsed');
             foreach ($submissions as $submission) {
                 echo $output->box_start('generalbox submission-summary');
                 echo $output->render($workshep->prepare_submission_summary($submission, $shownames));
@@ -904,7 +927,8 @@ case workshep::PHASE_CLOSED:
         }
     }
     if ($assessments = $workshep->get_assessments_by_reviewer($USER->id)) {
-        print_collapsible_region_start('', 'workshep-viewlet-assignedassessments', get_string('assignedassessments', 'workshep'));
+        print_collapsible_region_start('', 'workshep-viewlet-assignedassessments', get_string('assignedassessments', 'workshep'),
+                'workshep-viewlet-assignedassessments-collapsed');
         $shownames = has_capability('mod/workshep:viewauthornames', $PAGE->context);
         foreach ($assessments as $assessment) {
             $submission                     = new stdclass();
@@ -944,7 +968,7 @@ $PAGE->requires->js_call_amd('mod_workshep/workshepview', 'init');
 
 // Team Evaluation. We always need to see it, so it lives outside the massive switch().
 $teameval_plugin = core_plugin_manager::instance()->get_plugin_info('local_teameval');
-if ($teameval_plugin) {
+if (ns_plugin_on('teameval', 'local')) {
     $teameval_renderer = $PAGE->get_renderer('local_teameval');
     $teameval = \local_teameval\output\team_evaluation_block::from_cmid($cm->id);
     echo $teameval_renderer->render($teameval);

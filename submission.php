@@ -259,7 +259,8 @@ if ($sid) {
 if (trim($workshep->instructauthors)) {
     $instructions = file_rewrite_pluginfile_urls($workshep->instructauthors, 'pluginfile.php', $PAGE->context->id,
         'mod_workshep', 'instructauthors', null, workshep::instruction_editors_options($PAGE->context));
-    print_collapsible_region_start('', 'workshep-viewlet-instructauthors', get_string('instructauthors', 'workshep'));
+    print_collapsible_region_start('', 'workshep-viewlet-instructauthors', get_string('instructauthors', 'workshep'),
+            'workshep-viewlet-instructauthors-collapsed');
     echo $output->box(format_text($instructions, $workshep->instructauthorsformat, array('overflowdiv'=>true)), array('generalbox', 'instructions'));
     print_collapsible_region_end();
 }
