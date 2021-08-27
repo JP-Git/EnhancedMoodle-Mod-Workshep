@@ -35,35 +35,9 @@ defined('MOODLE_INTERNAL') || die();
  * @return bool result
  */
 function xmldb_workshep_upgrade($oldversion) {
-    global $CFG, $DB;
+    global $DB;
 
     $dbman = $DB->get_manager();
-
-    // Automatically generated Moodle v3.2.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Automatically generated Moodle v3.3.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Automatically generated Moodle v3.4.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    if ($oldversion < 2018042700) {
-        // Drop the old Moodle 1.x tables, thanks privacy by design for forcing me to do so finally.
-
-        $oldtables = ['workshep_old', 'workshep_elements_old', 'workshep_rubrics_old', 'workshep_submissions_old',
-            'workshep_assessments_old', 'workshep_grades_old', 'workshep_stockcomments_old', 'workshep_comments_old'];
-
-        foreach ($oldtables as $oldtable) {
-            $table = new xmldb_table($oldtable);
-
-            if ($dbman->table_exists($table)) {
-                $dbman->drop_table($table);
-            }
-        }
-
-        upgrade_mod_savepoint(true, 2018042700, 'workshep');
-    }
 
     // Automatically generated Moodle v3.5.0 release upgrade line.
     // Put any upgrade step following this.
@@ -135,6 +109,56 @@ function xmldb_workshep_upgrade($oldversion) {
 
         upgrade_mod_savepoint(true, 2017081601, 'workshep');
     }
+
+    if ($oldversion < 2018062600) {
+
+        // Define field submissiontypetext to be added to workshep.
+        $table = new xmldb_table('workshep');
+        $field = new xmldb_field('submissiontypetext', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'gradedecimals');
+
+        // Conditionally launch add field submissiontypetext.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $field = new xmldb_field('submissiontypefile', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1',
+                'submissiontypetext');
+
+        // Conditionally launch add field submissiontypefile.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Convert existing worksheps with attachments disabled to use the new settings.
+        $worksheps = $DB->get_records('workshep', ['nattachments' => 0]);
+        foreach ($worksheps as $workshep) {
+            $update = (object) [
+                'id' => $workshep->id,
+                'submissiontypefile' => 0,
+                'submissiontypetext' => 2,
+                'nattachments' => 1
+            ];
+            $DB->update_record('workshep', $update);
+        }
+
+        // Changing the default of field nattachments on table workshep to 1.
+        $field = new xmldb_field('nattachments', XMLDB_TYPE_INTEGER, '3', null, null, null, '1', 'submissiontypefile');
+
+        // Launch change of default for field nattachments.
+        $dbman->change_field_default($table, $field);
+
+        // Workshop savepoint reached.
+        upgrade_mod_savepoint(true, 2018062600, 'workshep');
+    }
+
+    // Automatically generated Moodle v3.6.0 release upgrade line.
+    // Put any upgrade step following this.
+
+    // Automatically generated Moodle v3.7.0 release upgrade line.
+    // Put any upgrade step following this.
+
+    // Automatically generated Moodle v3.8.0 release upgrade line.
+    // Put any upgrade step following this.
 
     return true;
 }

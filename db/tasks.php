@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,18 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Workshop subplugin types declaration
+ * Definition of workshep scheduled tasks.
  *
  * @package   mod_workshep
- * @copyright 2010 Petr Skoda (http://skodak.org)
+ * @copyright 2019 Simey Lameze <simey@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$subplugins = array(
-                    'workshepform'       => 'mod/workshep/form',
-                    'workshepallocation' => 'mod/workshep/allocation',
-                    'workshepcalibration'=> 'mod/workshep/calibration',
-                    'workshepeval'       => 'mod/workshep/eval',
-                    );
+$tasks = [
+    [
+        'classname' => '\mod_workshep\task\cron_task',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '*',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*'
+    ],
+    [
+        'classname' => '\mod_workshep\task\legacy_workshep_allocation_cron',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '*',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*'
+    ]
+];

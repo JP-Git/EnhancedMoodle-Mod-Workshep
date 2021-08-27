@@ -27,3 +27,4 @@ $string['reviewernumber'] = 'Number of reviewers: %d';
 $string['revieweenumber'] = 'Number of reviewees: %d';
 $string['calibrationscore'] = ' (%.2f%%)';
 $string['calibrationscore_help'] = 'Calibration score';
+$string['privacy:metadata'] = 'The Static allocation plugin does not store any personal data. Actual personal data about who is going to assess whom are stored by the Workshop module itself and they form basis for exporting the assessments details.';

@@ -1042,8 +1042,11 @@ class mod_workshep_external extends external_api {
             return null;
         }
 
-        // Remove the feedback for the reviewer if the feedback phase is not valid or if we don't have enough permissions to see it.
-        if ($workshep->phase < workshep::PHASE_EVALUATION || !($isreviewer || $canviewallassessments)) {
+        // Remove the feedback for the reviewer if:
+        // I can't see it in the evaluation phase because I'm not a teacher or the reviewer AND
+        // I can't see it in the assessment phase because I'm not a teacher.
+        if (($workshep->phase < workshep::PHASE_EVALUATION || !($isreviewer || $canviewallassessments)) &&
+                ($workshep->phase < workshep::PHASE_ASSESSMENT || !$canviewallassessments) ) {
             // Remove all the feedback information (all the optional fields).
             foreach ($properties as $attribute => $settings) {
                 if (!empty($settings['optional'])) {

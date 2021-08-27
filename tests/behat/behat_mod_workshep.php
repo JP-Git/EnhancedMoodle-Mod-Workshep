@@ -73,19 +73,19 @@ class behat_mod_workshep extends behat_base {
         $phasenumber = 0;
         switch ($phase) {
             case get_string('phasesetup', 'workshep'):
-                $phasenumber = workshop::PHASE_SETUP;
+                $phasenumber = workshep::PHASE_SETUP;
                 break;
             case get_string('phasesubmission', 'workshep'):
-                $phasenumber = workshop::PHASE_SUBMISSION;
+                $phasenumber = workshep::PHASE_SUBMISSION;
                 break;
             case get_string('phaseassessment', 'workshep'):
-                $phasenumber = workshop::PHASE_ASSESSMENT;
+                $phasenumber = workshep::PHASE_ASSESSMENT;
                 break;
             case get_string('phaseevaluation', 'workshep'):
-                $phasenumber = workshop::PHASE_EVALUATION;
+                $phasenumber = workshep::PHASE_EVALUATION;
                 break;
             case get_string('phaseclosed', 'workshep'):
-                $phasenumber = workshop::PHASE_CLOSED;
+                $phasenumber = workshep::PHASE_CLOSED;
                 break;
         }
         return $phasenumber;
@@ -216,7 +216,7 @@ class behat_mod_workshep extends behat_base {
 
      - Step "/^I set portfolio instance "(?P<portfolioinstance_string>(?:[^"]|\\")*)" to "(?P<value_string>(?:[^"]|\\")*)"$/" is already defined in behat_mod_workshep::i_set_portfolio_instance_to()
      - behat_mod_workshep::i_set_portfolio_instance_to()
-     - behat_mod_workshop::i_set_portfolio_instance_to()
+     - behat_mod_workshep::i_set_portfolio_instance_to()
 
      */
 }

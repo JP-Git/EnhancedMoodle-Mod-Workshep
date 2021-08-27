@@ -21,9 +21,9 @@ Feature: Teachers can embed images into instructions and conclusion fields
     And I click on "Save changes" "button"
     And I am on "Course 1" course homepage with editing mode on
     # Create and edit the workshep.
-    When I add a "Workshop" to section "1" and I fill the form with:
-      | Workshop name | Workshop with embedded images  |
-    And I follow "Workshop with embedded images"
+    When I add a "Workshep" to section "1" and I fill the form with:
+      | Workshep name | Workshep with embedded images  |
+    And I follow "Workshep with embedded images"
     # Embed the image into Instructions for submission.
     And I navigate to "Edit settings" in current page administration
     And I expand all fieldsets
@@ -64,9 +64,9 @@ Feature: Teachers can embed images into instructions and conclusion fields
     And I click on "Save image" "button"
     And I press "Save and display"
     # Save the form and check the images are displayed in appropriate phases.
-    And I change phase in workshep "Workshop with embedded images" to "Submission phase"
+    And I change phase in workshep "Workshep with embedded images" to "Submission phase"
     Then "//*[contains(@class, 'instructions')]//img[contains(@src, 'pluginfile.php') and contains(@src, '/mod_workshep/instructauthors/moodlelogo.png') and @alt='How to submit']" "xpath_element" should exist
-    And I change phase in workshep "Workshop with embedded images" to "Assessment phase"
+    And I change phase in workshep "Workshep with embedded images" to "Assessment phase"
     And "//*[contains(@class, 'instructions')]//img[contains(@src, 'pluginfile.php') and contains(@src, '/mod_workshep/instructreviewers/moodlelogo.png') and @alt='How to assess']" "xpath_element" should exist
-    And I change phase in workshep "Workshop with embedded images" to "Closed"
+    And I change phase in workshep "Workshep with embedded images" to "Closed"
     And "//*[contains(@class, 'conclusion')]//img[contains(@src, 'pluginfile.php') and contains(@src, '/mod_workshep/conclusion/moodlelogo.png') and @alt='Well done']" "xpath_element" should exist

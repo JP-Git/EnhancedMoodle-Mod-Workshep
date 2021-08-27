@@ -93,7 +93,8 @@ $string['configgradedecimals'] = 'Default number of digits that should be shown 
 $string['configgradinggrade'] = 'Default maximum grade for assessment in Enhanced Workshops';
 $string['configmaxbytes'] = 'Default maximum submission file size for all Enhanced Workshops on the site (subject to course limits and other local settings)';
 $string['configstrategy'] = 'Default grading strategy for Enhanced Workshops';
-$string['createsubmission'] = 'Start preparing your submission';
+$string['createsubmission'] = 'Add submission';
+$string['crontask'] = 'Background processing for workshep module';
 $string['daysago'] = '{$a} days ago';
 $string['daysleft'] = '{$a} days left';
 $string['daystoday'] = 'today';
@@ -164,6 +165,8 @@ $string['formatpeergradenogradinghovertext'] = 'Grade Given';
 $string['formatpeergradeweightednograding'] = '<span class="grade">{$a->grade}</span> @ <span class="weight">{$a->weight}</span>';
 $string['formatpeergradeweightednogradinghovertext'] = 'Grade Given @ Assessment Weight';
 $string['givengrades'] = 'Grades given';
+$string['grade_submission_name'] = 'Submission';
+$string['grade_grading_name'] = 'Assessment';
 $string['gradecalculated'] = 'Calculated grade for submission';
 $string['gradedecimals'] = 'Decimal places in grades';
 $string['gradegivento'] = '&gt;';
@@ -186,8 +189,14 @@ $string['chooseuser'] = 'Choose user...';
 $string['iamsure'] = 'Yes, I am sure';
 $string['indicator:cognitivedepth'] = 'Workshop cognitive';
 $string['indicator:cognitivedepth_help'] = 'This indicator is based on the cognitive depth reached by the student in a Workshop activity.';
+$string['indicator:cognitivedepthdef'] = 'Workshop cognitive';
+$string['indicator:cognitivedepthdef_help'] = 'The participant has reached this percentage of the cognitive engagement offered by the Workshop activities during this analysis interval (Levels = No view, View, Submit, View feedback, Comment on feedback, Resubmit after viewing feedback)';
+$string['indicator:cognitivedepthdef_link'] = 'Learning_analytics_indicators#Cognitive_depth';
 $string['indicator:socialbreadth'] = 'Workshop social';
 $string['indicator:socialbreadth_help'] = 'This indicator is based on the social breadth reached by the student in a Workshop activity.';
+$string['indicator:socialbreadthdef'] = 'Workshop social';
+$string['indicator:socialbreadthdef_help'] = 'The participant has reached this percentage of the social engagement offered by the Workshop activities during this analysis interval (Levels = No participation, Participant alone, Participant with others)';
+$string['indicator:socialbreadthdef_link'] = 'Learning_analytics_indicators#Social_breadth';
 $string['info'] = 'Info';
 $string['instructauthors'] = 'Instructions for submission';
 $string['instructreviewers'] = 'Instructions for assessment';
@@ -196,6 +205,7 @@ $string['latesubmissions'] = 'Late submissions';
 $string['latesubmissions_desc'] = 'Allow submissions after the deadline';
 $string['latesubmissions_help'] = 'If enabled, an author may submit their work after the submissions deadline or during the assessment phase. Late submissions cannot be edited though.';
 $string['latesubmissionsallowed'] = 'Late submissions are allowed';
+$string['legacyallocationplugincron'] = 'Legacy cron workshep allocation';
 $string['maxbytes'] = 'Maximum submission attachment size';
 $string['modulename'] = 'Enhanced Workshop';
 $string['modulename_help'] = 'The Enhanced Workshop activity module enables the collection, review and peer assessment of students\' work.
@@ -212,6 +222,7 @@ $string['mysubmission'] = 'My submission';
 $string['nattachments'] = 'Maximum number of submission attachments';
 $string['noexamples'] = 'No examples yet in this Enhanced Workshop';
 $string['noexamplesformready'] = 'You must define the assessment form before providing example submissions';
+$string['nosubmissiontype'] = 'At least one submission type must be available';
 $string['nogradeyet'] = 'No grade yet';
 $string['nosubmissionfound'] = 'No submission found for this user';
 $string['nosubmissions'] = 'No submissions yet in this Enhanced Workshop';
@@ -254,10 +265,10 @@ $string['privacy:metadata:aggregatedgradinggrade'] = 'Aggregated grade for all a
 $string['privacy:metadata:assessmentgrade'] = 'Aggregated grade for the submission suggested by this assessment';
 $string['privacy:metadata:assessmentgradinggrade'] = 'Grade for providing this assessment';
 $string['privacy:metadata:assessmentgradinggradeover'] = 'Manually overridden value of the grade for providing this assessment';
-$string['privacy:metadata:assessmentid'] = 'Identifier of the assessment';
-$string['privacy:metadata:authorid'] = 'Identifier of the submission author';
+$string['privacy:metadata:assessmentid'] = 'ID of the assessment';
+$string['privacy:metadata:authorid'] = 'ID of the submission author';
 $string['privacy:metadata:dimensiongrade'] = 'Grade in the given assessment dimension';
-$string['privacy:metadata:dimensionid'] = 'Identifier of the assessment dimension';
+$string['privacy:metadata:dimensionid'] = 'ID of the assessment dimension';
 $string['privacy:metadata:example'] = 'Whether this record represents an example submission';
 $string['privacy:metadata:feedbackauthor'] = 'Feedback for the author';
 $string['privacy:metadata:feedbackauthorformat'] = 'Text format of the feedback for the author';
@@ -266,30 +277,56 @@ $string['privacy:metadata:feedbackreviewerformat'] = 'Text format of the feedbac
 $string['privacy:metadata:late'] = 'Whether the submission been submitted after the deadline';
 $string['privacy:metadata:peercomment'] = 'Comment on the given grade by the user providing the assessment';
 $string['privacy:metadata:peercommentformat'] = 'Text format of the comment on the given grade';
+$string['privacy:metadata:preference:viewlet-allexamples-collapsed'] = 'The collapsed/expanded state for the \'Example submissions\' viewlet.';
+$string['privacy:metadata:preference:viewlet-allsubmissions-collapsed'] = 'The collapsed/expanded state for the \'Workshop submissions report\' viewlet.';
+$string['privacy:metadata:preference:viewlet-assessmentform-collapsed'] = 'The collapsed/expanded state for the \'Assessment form\' viewlet.';
+$string['privacy:metadata:preference:viewlet-assignedassessments-collapsed'] = 'The collapsed/expanded state for the \'Assigned submissions to assess\' viewlet.';
+$string['privacy:metadata:preference:viewlet-cleargrades-collapsed'] = 'The collapsed/expanded state for the \'Workshop toolbox\' viewlet.';
+$string['privacy:metadata:preference:viewlet-conclusion-collapsed'] = 'The collapsed/expanded state for the \'Conclusion\' viewlet.';
+$string['privacy:metadata:preference:viewlet-examples-collapsed'] = 'The collapsed/expanded state for the \'Example submissions to assess\' viewlet.';
+$string['privacy:metadata:preference:viewlet-examplesfail-collapsed'] = 'The collapsed/expanded state for the \'Example submissions to assess\' viewlet.';
+$string['privacy:metadata:preference:viewlet-gradereport-collapsed'] = 'The collapsed/expanded state for the \'Workshop grades report\' viewlet.';
+$string['privacy:metadata:preference:viewlet-instructauthors-collapsed'] = 'The collapsed/expanded state for the \'Instructions for submission\' viewlet.';
+$string['privacy:metadata:preference:viewlet-instructreviewers-collapsed'] = 'The collapsed/expanded state for the \'Instructions for assessment\' viewlet.';
+$string['privacy:metadata:preference:viewlet-intro-collapsed'] = 'The collapsed/expanded state for the \'Intro\' viewlet.';
+$string['privacy:metadata:preference:viewlet-overallfeedback-collapsed'] = 'The collapsed/expanded state for the \'Overall feedback\' viewlet.';
+$string['privacy:metadata:preference:viewlet-ownsubmission-collapsed'] = 'The collapsed/expanded state for the \'Your submission\' viewlet.';
+$string['privacy:metadata:preference:viewlet-publicsubmissions-collapsed'] = 'The collapsed/expanded state for the \'Published submissions\' viewlet.';
+$string['privacy:metadata:preference:viewlet-yourgrades-collapsed'] = 'The collapsed/expanded state for the \'Your grades\' viewlet.';
 $string['privacy:metadata:preference:perpage'] = 'Number of submissions the user prefers to see on one page';
 $string['privacy:metadata:published'] = 'Whether the submission should be published to all participants once the workshep is closed';
-$string['privacy:metadata:reviewerid'] = 'Identifier of the user providing the assessment';
+$string['privacy:metadata:reviewerid'] = 'ID of the user providing the assessment';
 $string['privacy:metadata:strategy'] = 'Name of the grading strategy subplugin interpreting the record values';
 $string['privacy:metadata:submissioncontent'] = 'Content of the submission';
 $string['privacy:metadata:submissioncontentformat'] = 'Text format of the submission content';
 $string['privacy:metadata:submissiongrade'] = 'Aggregated grade for the submission written as a decimal number from interval 0..100';
 $string['privacy:metadata:submissiongradeover'] = 'Manually overridden value of the aggregated grade';
-$string['privacy:metadata:submissionid'] = 'Identifier of the submission';
+$string['privacy:metadata:submissionid'] = 'ID of the submission';
 $string['privacy:metadata:submissiontitle'] = 'Title of the submission';
 $string['privacy:metadata:subsystem:corefiles'] = 'Workshop module stores files embedded in / attached to the submission text';
 $string['privacy:metadata:subsystem:coreplagiarism'] = 'Workshop module has inbuilt support for plagiarism prevention systems';
 $string['privacy:metadata:timeaggregated'] = 'When the aggregated grade was last calculated';
 $string['privacy:metadata:timecreated'] = 'When this record was created in the database';
 $string['privacy:metadata:timemodified'] = 'When this record was last modified in the database';
-$string['privacy:metadata:userid'] = 'Identifier of the user for which aggregated grade is calculated';
+$string['privacy:metadata:userid'] = 'ID of the user for which aggregated grade is calculated';
 $string['privacy:metadata:weight'] = 'Weight of the assessment';
 $string['privacy:metadata:workshepaggregations'] = 'Holds aggregated grades for assessment';
 $string['privacy:metadata:workshepassessments'] = 'Holds information about allocated assessments of workshep module submissions';
 $string['privacy:metadata:workshepgrades'] = 'Holds information about how the assessment forms were filled with grades and comments';
-$string['privacy:metadata:workshepid'] = 'Identifier of the workshep activity';
+$string['privacy:metadata:workshepid'] = 'ID of the workshep activity';
+$string['privacy:metadata:workshepcalibration'] = 'Holds information about workshep module calibrations';
 $string['privacy:metadata:workshepsubmissions'] = 'Holds information about workshep module submissions';
+$string['privacy:metadata:workshepuserexamples'] = 'Holds information about workshep user examples';
+$string['privacy:metadata:calibration:id'] = 'ID of the calibration';
+$string['privacy:metadata:calibration:userid'] = 'ID of the user for which the calibration applies to';
+$string['privacy:metadata:calibration:submissionid'] = 'ID of the submission';
+$string['privacy:metadata:calibration:workshepid'] = 'ID of the workshep activity';
+$string['privacy:metadata:user_examples:id'] = 'ID of the user examples';
+$string['privacy:metadata:user_examples:workshepid'] = 'ID of the workshep activity';
+$string['privacy:metadata:user_examples:userid'] = 'ID of the user for the user examples ';
+$string['privacy:metadata:user_examples:score'] = 'score for the user examples';
 $string['privacy:request:delete:title'] = '[Deleted]';
-$string['privacy:request:delete:content'] = 'The content has been deleted at the request of the user.';
+$string['privacy:request:delete:content'] = 'The content has been deleted (requested by the user or expired)';
 $string['publishedsubmissions'] = 'Published submissions';
 $string['publishsubmission'] = 'Publish submission';
 $string['publishsubmission_help'] = 'Published submissions are available to the others when the Enhanced Workshop is closed.';
@@ -348,6 +385,12 @@ $string['submissionstart'] = 'Open for submissions from';
 $string['submissionstartevent'] = '{$a} opens for submissions';
 $string['submissionstartdatetime'] = 'Open for submissions from {$a->daydatetime} ({$a->distanceday})';
 $string['submissiontitle'] = 'Title';
+$string['submissiontypefileavailable'] = 'File attachment<span class="accesshide"> available</span>';
+$string['submissiontypefilerequired'] = '<span class="accesshide">File attachment </span>Required';
+$string['submissiontypetextavailable'] = 'Online text<span class="accesshide"> available</span>';
+$string['submissiontypetextrequired'] = '<span class="accesshide">Online text </span>Required';
+$string['submissiontypedisabled'] = 'This submission type is disabled for this workshep.';
+$string['submissiontypes'] = 'Submission types';
 $string['submissionsreport'] = 'Workshop submissions report';
 $string['submittednotsubmitted'] = 'Submitted ({$a->submitted}) / not submitted ({$a->notsubmitted})';
 $string['subplugintype_workshepallocation'] = 'Submissions allocation method';
@@ -370,7 +413,7 @@ $string['switchphase30info'] = 'You are about to switch the Enhanced Workshop in
 $string['switchphase40'] = 'Switch to the evaluation phase';
 $string['switchphase40info'] = 'You are about to switch the Enhanced Workshop into the <strong>Grading evaluation phase</strong>. In this phase, users cannot modify their submissions or their assessments. Teachers may use the grading evaluation tools to calculate final grades and provide feedback for reviewers.';
 $string['switchphase50'] = 'Close Enhanced Workshop';
-$string['switchphase50info'] = 'You are about to close the Enhanded Workshop. This will result in the calculated grades appearing in the gradebook. Students may view their submissions and their submission assessments.';
+$string['switchphase50info'] = 'You are about to close the Workshop (UNSW). This will result in the calculated grades appearing in the gradebook. Students may view their submissions and their submission assessments.';
 $string['taskassesspeers'] = 'Assess peers';
 $string['taskassesspeersdetails'] = 'total: {$a->total}<br />pending: {$a->todo}';
 $string['taskassessself'] = 'Assess yourself';
@@ -430,10 +473,6 @@ $string['yourassessmentfor'] = 'Your assessment for {$a}';
 $string['yourgrades'] = 'Your grades';
 $string['yoursubmission'] = 'Your submission';
 
-// Deprecated since Moodle 3.4.
-$string['err_unknownfileextension'] = 'Unknown file extension: {$a}';
-$string['err_wrongfileextension'] = 'Some files ({$a->wrongfiles}) cannot be uploaded. Only file types {$a->whitelist} are allowed.';
-
 //Additions: Team Mode
 $string['teammode'] = 'Team mode';
 $string['teammode_desc'] = 'Allow students to submit work as a team.';
@@ -446,7 +485,7 @@ If self-assessment is disabled, students are prevented from marking their own te
 MDOWN;
 $string['teammode_disabled'] = 'Team mode is disabled because you have no groups in your course.';
 $string['teammode_ungroupedwarning'] = 'Warning: If the Enhanced Workshop is in Team mode, then users MUST be part of at least one group to submit work.<br/>
-    <br/>
+	<br/>
 These users are currently not in a group: {$a}';
 $string['teammode_notingroupwarning'] = 'You are not in any groups. You cannot submit work for this assessment.';
 $string['teammode_duplicategroupnameswarning'] = 'You have some groups with the same name, so you can\'t upload data. You need to change their names or allocate manually. (Duplicate names: {$a})';
@@ -552,6 +591,8 @@ $string['calculatescores'] = 'Calculate Calibration Scores';
 $string['yourcalibration'] = 'Your calibration results';
 $string['calibrationcompletion'] = '{$a->num} / {$a->den} users have completed example assessments.';
 
-// Submit on behalf
+// UNSW3-83
 $string['submitonbehalfofothers'] = 'Submit on behalf of others';
+
+// UNSW3-115
 $string['submissiononbehalfof'] = 'Submission on behalf of {$a}';

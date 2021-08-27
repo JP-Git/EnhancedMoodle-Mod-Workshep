@@ -145,10 +145,24 @@ class workshep_summary_exporter extends exporter {
                 'description' => 'Number of digits that should be shown after the decimal point when displaying grades.',
                 'optional' => true,
             ),
+            'submissiontypetext' => array (
+                'type' => PARAM_INT,
+                'default' => 1,
+                'description' => 'Indicates whether text is required as part of each submission. ' .
+                        '0 for no, 1 for optional, 2 for required.',
+                'optional' => true
+            ),
+            'submissiontypefile' => array (
+                'type' => PARAM_INT,
+                'default' => 1,
+                'description' => 'Indicates whether a file upload is required as part of each submission. ' .
+                        '0 for no, 1 for optional, 2 for required.',
+                'optional' => true
+            ),
             'nattachments' => array(
                 'type' => PARAM_INT,
-                'default' => 0,
-                'description' => 'Number of required submission attachments.',
+                'default' => 1,
+                'description' => 'Maximum number of submission attachments.',
                 'optional' => true,
             ),
             'submissionfiletypes' => array(
@@ -311,6 +325,7 @@ class workshep_summary_exporter extends exporter {
         return [
             'component' => 'mod_workshep',
             'filearea' => 'intro',
+            'options' => array('noclean' => true),
         ];
     }
 

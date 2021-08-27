@@ -29,6 +29,22 @@ Feature: Setting grades to pass via workshep editing form
     And the field "Submission grade to pass" matches value "45.00"
     And the field "Assessment grade to pass" matches value "10.50"
 
+  @javascript
+  Scenario: Grade to pass kept even with submission types without online text (MDL-64862)
+    Given I log in as "teacher1"
+    And I am on "Course1" course homepage with editing mode on
+    When I add a "Workshep" to section "1" and I fill the form with:
+      | Workshop name               | Another workshep            |
+      | Description                 | Grades to pass are set here |
+      | Submission grade to pass    | 42                          |
+      | Assessment grade to pass    | 10.1                        |
+      | submissiontypetextavailable | 0                           |
+    Then I should not see "Adding a new Workshep"
+    And I follow "Another workshep"
+    And I navigate to "Edit settings" in current page administration
+    And the field "Submission grade to pass" matches value "42.00"
+    And the field "Assessment grade to pass" matches value "10.10"
+
   Scenario: Adding a new workshep with grade to pass fields left empty
     Given I log in as "teacher1"
     And I am on "Course1" course homepage with editing mode on

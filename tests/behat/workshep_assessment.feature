@@ -1,5 +1,5 @@
 @mod @mod_workshep
-Feature: Workshop submission and assessment
+Feature: Workshep submission and assessment
   In order to use workshep activity
   As a student
   I need to be able to add a submission and assess those of my peers
@@ -23,8 +23,8 @@ Feature: Workshop submission and assessment
       | student4 | c1     | student        |
       | teacher1 | c1     | editingteacher |
     And the following "activities" exist:
-      | activity | name         | intro                     | course | idnumber  |
-      | workshep | TestWorkshep | Test workshep description | c1     | workshep1 |
+      | activity | name         | intro                     | course | idnumber  | submissiontypetext | submissiontypefile |
+      | workshep | TestWorkshep | Test workshep description | c1     | workshep1 | 2                  | 1                  |
 # teacher1 sets up assessment form and changes the phase to submission
     When I log in as "teacher1"
     And I am on "Course1" course homepage
